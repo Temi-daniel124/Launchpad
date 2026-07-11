@@ -685,6 +685,15 @@ export default function CVScreen() {
   };
 
   const handleGeneratePress = () => {
+    const career = String((profile as any)?.career_type || profile?.job_title || "")
+      .trim()
+      .toLowerCase();
+    if (career === "brand designer") {
+      return showToast(
+        "Brand Designer CV generation is not available yet.",
+        "error",
+      );
+    }
     if (importMode === "extract") {
       generateCV();
       return;

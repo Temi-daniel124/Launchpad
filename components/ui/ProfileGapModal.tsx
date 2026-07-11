@@ -35,6 +35,8 @@ interface ProfileGapModalProps {
   mode: "portfolio" | "cv";
 }
 
+const BLOCKED_GENERATION_CAREERS = ["Brand Designer"];
+
 export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   visible,
   onClose,
@@ -42,6 +44,13 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   profile,
   mode,
 }) => {
+  const selectedCareer = String(profile?.career_type || profile?.job_title || "")
+    .trim()
+    .toLowerCase();
+  const isBlockedCareer = BLOCKED_GENERATION_CAREERS.some(
+    (career) => career.toLowerCase() === selectedCareer,
+  );
+
   const getGapFields = (): GapField[] => {
     // These are fields AI CAN intelligently fill based on job title/industry
     const fields: GapField[] = [
@@ -109,6 +118,47 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   };
 
   const hasGaps = gaps.length > 0;
+
+  if (isBlockedCareer) {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onClose}
+      >
+        <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
+          <LinearGradient
+            colors={["rgba(79,70,229,0.15)", "transparent"]}
+            style={StyleSheet.absoluteFill}
+          />
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.header}>
+              <View style={styles.iconBox}>
+                <WarningCircle size={28} color={COLORS.gold} weight="fill" />
+              </View>
+              <Text variant="h2" style={{ marginTop: 16, marginBottom: 8 }}>
+                Brand Designer is not available yet
+              </Text>
+              <Text
+                variant="body"
+                align="center"
+                style={{ paddingHorizontal: 16 }}
+              >
+                This career is still being prepared for Launchpad generation.
+                Choose another career for now, or wait until Brand Designer is
+                approved.
+              </Text>
+            </View>
+            <Button title="Close" onPress={onClose} variant="ghost" size="lg" />
+          </ScrollView>
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <Modal

@@ -75,6 +75,7 @@ const DESIGN_JOBS = [
 ];
 
 const ALL_JOB_SUGGESTIONS = [...TECH_JOBS, ...DESIGN_JOBS];
+const BLOCKED_CAREERS = ["Brand Designer"];
 
 const INDUSTRIES = [
   "Technology",
@@ -112,6 +113,11 @@ function isTechJob(title: string): boolean {
   );
 }
 
+function isBlockedCareer(title: string): boolean {
+  const lower = title.toLowerCase().trim();
+  return BLOCKED_CAREERS.some((career) => career.toLowerCase() === lower);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SCREEN
 // ─────────────────────────────────────────────────────────────────────────────
@@ -143,6 +149,12 @@ export default function Step1Screen() {
     if (!industry) return showToast("Select your industry", "error");
     if (!experienceLevel)
       return showToast("Select your experience level", "error");
+    if (isBlockedCareer(jobTitle)) {
+      return showToast(
+        "Brand Designer is not available yet. Choose another career for now.",
+        "error",
+      );
+    }
 
     const professionType = isTechJob(jobTitle) ? "tech" : "design";
 
@@ -216,8 +228,18 @@ export default function Step1Screen() {
                 {filteredSuggestions.slice(0, 6).map((s) => (
                   <TouchableOpacity
                     key={s}
-                    style={styles.suggestionItem}
+                    style={[
+                      styles.suggestionItem,
+                      isBlockedCareer(s) && styles.suggestionItemDisabled,
+                    ]}
                     onPress={() => {
+                      if (isBlockedCareer(s)) {
+                        showToast(
+                          "Brand Designer is not available yet. Choose another career for now.",
+                          "error",
+                        );
+                        return;
+                      }
                       setJobTitle(s);
                       setShowSuggestions(false);
                     }}
@@ -228,10 +250,20 @@ export default function Step1Screen() {
                     {/* Visual cue for type */}
                     <Text
                       variant="caption"
-                      color={isTechJob(s) ? COLORS.indigo : COLORS.gold}
+                      color={
+                        isBlockedCareer(s)
+                          ? COLORS.slate
+                          : isTechJob(s)
+                            ? COLORS.indigo
+                            : COLORS.gold
+                      }
                       style={{ fontSize: 10 }}
                     >
-                      {isTechJob(s) ? "Tech" : "Design"}
+                      {isBlockedCareer(s)
+                        ? "Unavailable"
+                        : isTechJob(s)
+                          ? "Tech"
+                          : "Design"}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -354,6 +386,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  suggestionItemDisabled: {
+    opacity: 0.55,
   },
   chipGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {

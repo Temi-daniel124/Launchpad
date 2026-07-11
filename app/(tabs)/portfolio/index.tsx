@@ -322,6 +322,17 @@ export default function PortfolioScreen() {
 
   // ── Generation ─────────────────────────────────────────────────────────────
   const handleGeneratePress = useCallback(() => {
+    const career = String((profile as any)?.career_type || profile?.job_title || "")
+      .trim()
+      .toLowerCase();
+    if (career === "brand designer") {
+      showToast(
+        "Brand Designer portfolio generation is not available yet.",
+        "error",
+      );
+      return;
+    }
+
     if (profile?.portfolio_url) {
       Alert.alert(
         "Regenerate Portfolio",
@@ -334,7 +345,7 @@ export default function PortfolioScreen() {
     } else {
       setShowGapModal(true);
     }
-  }, [profile]);
+  }, [profile, showToast]);
 
   const handleProceedWithGeneration = useCallback(
     async (fieldsToGenerate: string[]) => {
