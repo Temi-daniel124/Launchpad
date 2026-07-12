@@ -78,6 +78,15 @@ interface Certification {
   year: string;
 }
 
+interface Testimonial {
+  id: string;
+  author_name: string;
+  author_role: string;
+  author_company: string;
+  quote_text: string;
+  display_permission_confirmed: boolean;
+}
+
 interface SkillsStructured {
   technical: string[];
   soft: string[];
@@ -87,6 +96,37 @@ interface SkillsStructured {
 const CEFR_LEVELS = ["Native", "C2", "C1", "B2", "B1", "A2", "A1"];
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+const TESTIMONIALS_UNAVAILABLE_ERROR = "TESTIMONIALS_UNAVAILABLE";
+const TESTIMONIALS_LOAD_MESSAGE =
+  "We couldn't load your testimonials. The testimonials area could not be reached safely. Try again in a few minutes before editing testimonials.";
+const TESTIMONIALS_STILL_LOADING_MESSAGE =
+  "Testimonials are still loading. Wait a moment, then try again.";
+
+function getProfileSaveErrorMessage(
+  error: unknown,
+  profileDetailsSaved: boolean,
+) {
+  const message =
+    error instanceof Error ? error.message : String((error as any)?.message || "");
+  const lowerMessage = message.toLowerCase();
+  const isTestimonialsFailure =
+    message === TESTIMONIALS_UNAVAILABLE_ERROR ||
+    lowerMessage.includes("portfolio_testimonials") ||
+    lowerMessage.includes("row-level security") ||
+    lowerMessage.includes("permission denied") ||
+    lowerMessage.includes("relation") ||
+    lowerMessage.includes("display_permission");
+
+  if (isTestimonialsFailure) {
+    if (profileDetailsSaved) {
+      return "Your profile details were saved, but we couldn't save your testimonials. The testimonials area could not be reached safely. Try again in a few minutes.";
+    }
+
+    return "We couldn't save your testimonials. The testimonials area could not be reached safely. Try again in a few minutes.";
+  }
+
+  return "We couldn't save your profile just now. Your changes did not reach the server. Check your connection and try again.";
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPLETENESS CALCULATOR
@@ -342,6 +382,7 @@ export default function ProfileEditScreen() {
     skills: false,
     languages: false,
     certifications: false,
+    testimonials: false,
     links: false,
     // Only shown for design users
     design: isDesignUser,
@@ -406,10 +447,62 @@ export default function ProfileEditScreen() {
     return [];
   });
 
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [testimonialsLoaded, setTestimonialsLoaded] = useState(false);
+  const [testimonialsDirty, setTestimonialsDirty] = useState(false);
+  const [testimonialsLoadError, setTestimonialsLoadError] = useState<
+    string | null
+  >(null);
+
   const [githubUsername, setGithubUsername] = useState(
     profile?.github_username || "",
   );
   const [linkedinUrl, setLinkedinUrl] = useState(profile?.linkedin_url || "");
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    let cancelled = false;
+
+    async function loadTestimonials() {
+      const { data, error } = await supabase
+        .from("portfolio_testimonials" as any)
+        .select(
+          "id,author_name,author_role,author_company,quote_text,display_permission_confirmed",
+        )
+        .eq("user_id", user!.id)
+        .order("sort_order", { ascending: true });
+
+      if (cancelled) return;
+
+      if (error) {
+        setTestimonialsLoaded(false);
+        setTestimonialsLoadError(TESTIMONIALS_LOAD_MESSAGE);
+        return;
+      }
+
+      setTestimonials(
+        ((data as any[]) || []).map((item) => ({
+          id: item.id || uid(),
+          author_name: item.author_name || "",
+          author_role: item.author_role || "",
+          author_company: item.author_company || "",
+          quote_text: item.quote_text || "",
+          display_permission_confirmed:
+            item.display_permission_confirmed === true,
+        })),
+      );
+      setTestimonialsLoaded(true);
+      setTestimonialsLoadError(null);
+      setTestimonialsDirty(false);
+    }
+
+    loadTestimonials();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   // ── Completeness ───────────────────────────────────────────────────────────
   const completeness = calcCompleteness({
@@ -612,6 +705,115 @@ export default function ProfileEditScreen() {
       prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
     );
 
+  const requireTestimonialsReady = () => {
+    if (testimonialsLoaded) return true;
+    showToast(
+      testimonialsLoadError || TESTIMONIALS_STILL_LOADING_MESSAGE,
+      "error",
+    );
+    return false;
+  };
+
+  const addTestimonial = () => {
+    if (!requireTestimonialsReady()) return;
+    setTestimonialsDirty(true);
+    setTestimonials((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        author_name: "",
+        author_role: "",
+        author_company: "",
+        quote_text: "",
+        display_permission_confirmed: false,
+      },
+    ]);
+  };
+
+  const removeTestimonial = (id: string) => {
+    if (!requireTestimonialsReady()) return;
+    setTestimonialsDirty(true);
+    setTestimonials((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateTestimonial = (
+    id: string,
+    field: keyof Testimonial,
+    value: string | boolean,
+  ) => {
+    if (!requireTestimonialsReady()) return;
+    setTestimonialsDirty(true);
+    setTestimonials((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+    );
+  };
+
+  const testimonialHasContent = (item: Testimonial) =>
+    Boolean(
+      item.author_name.trim() ||
+        item.author_role.trim() ||
+        item.author_company.trim() ||
+        item.quote_text.trim(),
+    );
+
+  const validateTestimonials = () => {
+    for (const item of testimonials) {
+      if (!testimonialHasContent(item)) continue;
+      if (
+        !item.author_name.trim() ||
+        !item.author_role.trim() ||
+        !item.quote_text.trim()
+      ) {
+        showToast(
+          "Each testimonial needs a name, role, and quote before it can be saved.",
+          "error",
+        );
+        return false;
+      }
+      if (!item.display_permission_confirmed) {
+        showToast(
+          "Confirm permission before saving a testimonial.",
+          "error",
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const saveTestimonials = async () => {
+    if (!user?.id || !testimonialsDirty) return;
+    if (!testimonialsLoaded) {
+      throw new Error(TESTIMONIALS_UNAVAILABLE_ERROR);
+    }
+
+    const cleanTestimonials = testimonials
+      .filter(testimonialHasContent)
+      .map((item, index) => ({
+        user_id: user.id,
+        author_name: item.author_name.trim(),
+        author_role: item.author_role.trim(),
+        author_company: item.author_company.trim() || null,
+        quote_text: item.quote_text.trim(),
+        display_permission_confirmed: item.display_permission_confirmed,
+        sort_order: index,
+      }));
+
+    const { error: deleteError } = await supabase
+      .from("portfolio_testimonials" as any)
+      .delete()
+      .eq("user_id", user.id);
+
+    if (deleteError) throw deleteError;
+    if (cleanTestimonials.length === 0) return;
+
+    const { error: insertError } = await supabase
+      .from("portfolio_testimonials" as any)
+      .insert(cleanTestimonials);
+
+    if (insertError) throw insertError;
+  };
+
   // ── Drive URL validation ───────────────────────────────────────────────────
   const validateDriveUrl = (url: string): boolean => {
     if (!url.trim()) return true; // empty is fine
@@ -624,6 +826,7 @@ export default function ProfileEditScreen() {
   // ── Save ───────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!fullName.trim()) return showToast("Full name is required", "error");
+    if (!validateTestimonials()) return;
 
     // Validate Drive URL if entered
     if (
@@ -638,6 +841,7 @@ export default function ProfileEditScreen() {
     }
 
     setSaving(true);
+    let profileDetailsSaved = false;
     try {
       const completenessScore = calcCompleteness({
         bio,
@@ -679,11 +883,13 @@ export default function ProfileEditScreen() {
           }),
         } as any),
       });
+      profileDetailsSaved = true;
+      await saveTestimonials();
 
       showToast("Profile saved!", "success");
       setTimeout(() => router.back(), 800);
-    } catch (err: any) {
-      showToast(err.message || "Save failed", "error");
+    } catch (err) {
+      showToast(getProfileSaveErrorMessage(err, profileDetailsSaved), "error");
     } finally {
       setSaving(false);
     }
@@ -1550,6 +1756,141 @@ export default function ProfileEditScreen() {
             {/* ── LINKS ─────────────────────────────────────────────────── */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
+                icon={ChatTeardrop}
+                title={`Testimonials${testimonials.length > 0 ? ` (${testimonials.length})` : ""}`}
+                color={COLORS.emerald}
+                expanded={sections.testimonials}
+                onToggle={() => toggleSection("testimonials")}
+              />
+              {sections.testimonials && (
+                <View style={styles.sectionBody}>
+                  {testimonialsLoadError && (
+                    <View style={styles.errorBox}>
+                      <Info size={14} color={COLORS.rose} />
+                      <Text
+                        variant="caption"
+                        color={COLORS.slate}
+                        style={{ flex: 1, lineHeight: 18 }}
+                      >
+                        {testimonialsLoadError}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.noticeBox}>
+                    <Info size={14} color={COLORS.emerald} />
+                    <Text
+                      variant="caption"
+                      color={COLORS.slate}
+                      style={{ flex: 1, lineHeight: 18 }}
+                    >
+                      Add testimonials only when the person has clearly agreed
+                      that you can show their words and name on your portfolio.
+                    </Text>
+                  </View>
+
+                  {testimonials.map((item, index) => (
+                    <View key={item.id} style={styles.entryCard}>
+                      <View style={styles.entryHeader}>
+                        <Text variant="label" color={COLORS.snow}>
+                          {item.author_name || `Testimonial ${index + 1}`}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => removeTestimonial(item.id)}
+                          style={styles.removeBtn}
+                        >
+                          <Trash size={16} color={COLORS.rose} />
+                        </TouchableOpacity>
+                      </View>
+                      <Field
+                        label="Author Name"
+                        value={item.author_name}
+                        onChangeText={(value) =>
+                          updateTestimonial(item.id, "author_name", value)
+                        }
+                        placeholder="e.g. Priya Shah"
+                        required
+                      />
+                      <Field
+                        label="Author Role"
+                        value={item.author_role}
+                        onChangeText={(value) =>
+                          updateTestimonial(item.id, "author_role", value)
+                        }
+                        placeholder="e.g. Product Lead"
+                        required
+                      />
+                      <Field
+                        label="Author Company"
+                        value={item.author_company}
+                        onChangeText={(value) =>
+                          updateTestimonial(item.id, "author_company", value)
+                        }
+                        placeholder="Optional"
+                      />
+                      <Field
+                        label="Quote"
+                        value={item.quote_text}
+                        onChangeText={(value) =>
+                          updateTestimonial(item.id, "quote_text", value)
+                        }
+                        placeholder="Paste the testimonial text"
+                        multiline
+                        maxLength={360}
+                        required
+                      />
+                      <View style={styles.permissionRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.fieldLabel}>
+                            Display Permission
+                          </Text>
+                          <Text
+                            variant="caption"
+                            color={COLORS.fog}
+                            style={{ lineHeight: 18 }}
+                          >
+                            I confirm I have permission to show this quote,
+                            name, role, and company on my portfolio.
+                          </Text>
+                        </View>
+                        <Switch
+                          value={item.display_permission_confirmed}
+                          onValueChange={(value) =>
+                            updateTestimonial(
+                              item.id,
+                              "display_permission_confirmed",
+                              value,
+                            )
+                          }
+                          trackColor={{
+                            false: COLORS.rim,
+                            true: COLORS.emerald,
+                          }}
+                          thumbColor="#fff"
+                        />
+                      </View>
+                    </View>
+                  ))}
+
+                  <TouchableOpacity
+                    onPress={addTestimonial}
+                    style={styles.addEntryBtn}
+                    activeOpacity={0.8}
+                  >
+                    <Plus size={16} color={COLORS.emerald} weight="bold" />
+                    <Text
+                      variant="label"
+                      color={COLORS.emerald}
+                      style={{ marginLeft: 8 }}
+                    >
+                      Add Testimonial
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </GlassCard>
+
+            <GlassCard padding={0} style={styles.sectionCard}>
+              <SectionHeader
                 icon={Link}
                 title="Links"
                 color={COLORS.slate}
@@ -1821,6 +2162,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 14,
+    paddingVertical: 4,
+  },
+  noticeBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginBottom: 14,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: "rgba(16,185,129,0.07)",
+    borderWidth: 1,
+    borderColor: "rgba(16,185,129,0.25)",
+  },
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginBottom: 14,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: "rgba(244,63,94,0.07)",
+    borderWidth: 1,
+    borderColor: "rgba(244,63,94,0.25)",
+  },
+  permissionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 4,
     paddingVertical: 4,
   },
   achieveRow: {
