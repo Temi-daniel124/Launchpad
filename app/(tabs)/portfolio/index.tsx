@@ -357,19 +357,24 @@ export default function PortfolioScreen() {
   }, [profile, showToast]);
 
   const handleProceedWithGeneration = useCallback(
-    async (fieldsToGenerate: string[]) => {
+    async (
+      fieldsToGenerate: string[],
+      drafts?: Record<string, string | string[] | number>,
+    ) => {
       setShowGapModal(false);
 
       if (fieldsToGenerate.length > 0) {
-        const updates: any = {};
+        const updates: any = drafts ? { ...drafts } : {};
         if (fieldsToGenerate.includes("bio") && !profile?.bio) {
-          updates.bio = `A dedicated ${profile?.job_title || "professional"} with ${profile?.experience_years || 4}+ years of experience delivering impactful results in ${profile?.industry || "the technology sector"}.`;
+          updates.bio =
+            updates.bio ||
+            `A dedicated ${profile?.job_title || "professional"} with ${profile?.experience_years || 4}+ years of experience delivering practical results.`;
         }
         if (
           fieldsToGenerate.includes("skills") &&
           (!profile?.skills || profile.skills.length === 0)
         ) {
-          updates.skills = [
+          updates.skills = updates.skills || [
             "Problem Solving",
             "Team Leadership",
             "Project Management",
@@ -378,7 +383,9 @@ export default function PortfolioScreen() {
           ];
         }
         if (fieldsToGenerate.includes("tagline") && !profile?.tagline) {
-          updates.tagline = `Building impactful solutions as a ${profile?.job_title || "professional"}`;
+          updates.tagline =
+            updates.tagline ||
+            `Building practical solutions as a ${profile?.job_title || "professional"}`;
         }
         if (Object.keys(updates).length > 0) {
           await updateProfile(updates);

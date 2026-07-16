@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -30,7 +31,7 @@ interface GapField {
 interface ProfileGapModalProps {
   visible: boolean;
   onClose: () => void;
-  onProceed: (fieldsToGenerate: string[]) => void;
+  onProceed: (fieldsToGenerate: string[], drafts?: Record<string, string | string[] | number>) => void;
   profile: any;
   mode: "portfolio" | "cv";
 }
@@ -114,6 +115,8 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   const [selectedToGenerate, setSelectedToGenerate] = useState<string[]>(
     gaps.map((g) => g.key),
   );
+  const [reviewingDrafts, setReviewingDrafts] = useState(false);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   const toggleField = (key: string) => {
     setSelectedToGenerate((prev) =>
@@ -122,6 +125,45 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   };
 
   const hasGaps = gaps.length > 0;
+
+  const createDrafts = () => {
+    const title = profile?.job_title || profile?.career_type || "professional";
+    const nextDrafts: Record<string, string> = {};
+    selectedToGenerate.forEach((field) => {
+      if (field === "bio") {
+        nextDrafts.bio = `A focused ${title} with ${profile?.experience_years || profile?.years_experience_exact || "relevant"} years of experience, known for clear communication, reliable delivery, and practical outcomes.`;
+      }
+      if (field === "job_title") nextDrafts.job_title = title;
+      if (field === "skills") {
+        nextDrafts.skills = "Communication, Problem Solving, Planning, Execution";
+      }
+      if (field === "experience_years") {
+        nextDrafts.experience_years = String(profile?.years_experience_exact || profile?.experience_years || "3");
+      }
+      if (field === "target_countries") {
+        nextDrafts.target_countries = "United Kingdom, Canada, Nigeria";
+      }
+      if (field === "tagline") {
+        nextDrafts.tagline = `Practical ${title} support with clear execution and dependable results.`;
+      }
+    });
+    setDrafts(nextDrafts);
+    setReviewingDrafts(true);
+  };
+
+  const submitDrafts = () => {
+    const parsed: Record<string, string | string[] | number> = {};
+    for (const [key, value] of Object.entries(drafts)) {
+      if (key === "skills" || key === "target_countries") {
+        parsed[key] = value.split(",").map((item) => item.trim()).filter(Boolean);
+      } else if (key === "experience_years") {
+        parsed[key] = Number(value) || value;
+      } else {
+        parsed[key] = value.trim();
+      }
+    }
+    onProceed(selectedToGenerate, parsed);
+  };
 
   if (isBlockedCareer) {
     return (
@@ -340,7 +382,31 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
 
           <View style={{ height: 32 }} />
 
-          {/* AI note */}
+          {reviewingDrafts && (
+            <GlassCard variant="bordered" padding={14} style={{ marginBottom: 20 }}>
+              <Text variant="label" color={COLORS.snow} style={{ marginBottom: 12 }}>
+                Review Alex's draft before saving
+              </Text>
+              {Object.entries(drafts).map(([key, value]) => (
+                <View key={key} style={{ marginBottom: 12 }}>
+                  <Text variant="caption" color={COLORS.slate} style={{ marginBottom: 6 }}>
+                    {key.replace(/_/g, " ")}
+                  </Text>
+                  <TextInput
+                    value={value}
+                    onChangeText={(textValue) =>
+                      setDrafts((current) => ({ ...current, [key]: textValue }))
+                    }
+                    multiline
+                    style={styles.reviewInput}
+                    placeholderTextColor={COLORS.fog}
+                  />
+                </View>
+              ))}
+            </GlassCard>
+          )}
+
+          {/* Alex note */}
           {hasGaps && selectedToGenerate.length > 0 && (
             <GlassCard
               variant="bordered"
@@ -348,11 +414,10 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
               style={{ marginBottom: 20 }}
             >
               <Text variant="caption" color={COLORS.cyan}>
-                AI will generate {selectedToGenerate.length} field
+                Alex will draft {selectedToGenerate.length} field
                 {selectedToGenerate.length > 1 ? "s" : ""} based on your job
-                title, industry, and profile. All generated content will be
-                saved to your profile and will match across your CV and
-                portfolio.
+                title, industry, and profile. You can edit the draft before it
+                is saved to your profile.
               </Text>
             </GlassCard>
           )}
@@ -361,11 +426,21 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
           <View style={{ gap: 12, paddingBottom: 40 }}>
             <Button
               title={
-                hasGaps && selectedToGenerate.length > 0
-                  ? `Generate ${selectedToGenerate.length} Field${selectedToGenerate.length > 1 ? "s" : ""} + ${mode === "cv" ? "CV" : "Portfolio"}`
+                reviewingDrafts
+                  ? `Save Drafts + ${mode === "cv" ? "CV" : "Portfolio"}`
+                  : hasGaps && selectedToGenerate.length > 0
+                  ? `Draft ${selectedToGenerate.length} Field${selectedToGenerate.length > 1 ? "s" : ""} with Alex`
                   : `Proceed with ${mode === "cv" ? "CV" : "Portfolio"}`
               }
-              onPress={() => onProceed(selectedToGenerate)}
+              onPress={() => {
+                if (reviewingDrafts) {
+                  submitDrafts();
+                } else if (hasGaps && selectedToGenerate.length > 0) {
+                  createDrafts();
+                } else {
+                  onProceed(selectedToGenerate);
+                }
+              }}
               size="lg"
             />
             <Button
@@ -417,5 +492,15 @@ const styles = StyleSheet.create({
     borderColor: `${COLORS.indigo}55`,
     backgroundColor: `${COLORS.indigo}11`,
     alignSelf: "flex-start",
+  },
+  reviewInput: {
+    minHeight: 74,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.rim,
+    backgroundColor: COLORS.elevated,
+    color: COLORS.snow,
+    padding: 12,
+    textAlignVertical: "top",
   },
 });
