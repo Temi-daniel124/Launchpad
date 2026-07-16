@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.rim,
   },
   chipSelected: {
-    backgroundColor: "rgba(79,70,229,0.2)",
+    backgroundColor: "rgba(21,154,99,0.12)",
     borderColor: COLORS.indigo,
   },
   typeCard: {
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   typeCardSelected: {
     borderColor: COLORS.indigo,
-    backgroundColor: "rgba(79,70,229,0.08)",
+    backgroundColor: "rgba(21,154,99,0.12)",
   },
   radio: {
     width: 20,

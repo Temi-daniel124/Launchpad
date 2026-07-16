@@ -40,9 +40,9 @@ import {
   Palette,
 } from "phosphor-react-native";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // TYPES
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 interface WorkExp {
   id: string;
   title: string;
@@ -128,9 +128,9 @@ function getProfileSaveErrorMessage(
   return "We couldn't save your profile just now. Your changes did not reach the server. Check your connection and try again.";
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // COMPLETENESS CALCULATOR
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function calcCompleteness(data: {
   bio: string;
   phone: string;
@@ -156,9 +156,9 @@ function calcCompleteness(data: {
   return Math.min(score, 100);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SUB-COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function SectionHeader({
   icon: Icon,
   title,
@@ -267,7 +267,7 @@ function TagInput({
   onAdd,
   onRemove,
   color = COLORS.indigo,
-  placeholder = "Add skill…",
+  placeholder = "Add skill...",
 }: {
   label: string;
   tags: string[];
@@ -300,7 +300,7 @@ function TagInput({
             <Text style={{ fontSize: 12, color, fontWeight: "600" }}>
               {tag}
             </Text>
-            <Text style={{ fontSize: 12, color, marginLeft: 4 }}>×</Text>
+            <Text style={{ fontSize: 12, color, marginLeft: 4 }}>x</Text>
           </TouchableOpacity>
         ))}
         <View style={styles.tagInputRow}>
@@ -361,9 +361,9 @@ function CEFRPicker({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MAIN SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 export default function ProfileEditScreen() {
   const { profile, updateProfile, user } = useAuthStore();
   const { showToast } = useUIStore();
@@ -371,7 +371,7 @@ export default function ProfileEditScreen() {
   const [generatingBio, setGeneratingBio] = useState(false);
   const [generatingSkills, setGeneratingSkills] = useState(false);
 
-  // Detect if user is a design user — controls which sections show
+  // Detect if user is a design user , controls which sections show
   const isDesignUser = (profile as any)?.profession_type === "design";
 
   // Section expanded state
@@ -391,7 +391,7 @@ export default function ProfileEditScreen() {
   const toggleSection = (key: keyof typeof sections) =>
     setSections((s) => ({ ...s, [key]: !s[key] }));
 
-  // ── Form state ─────────────────────────────────────────────────────────────
+  // -- Form state -------------------------------------------------------------
   const [fullName, setFullName] = useState(profile?.full_name || "");
   const [jobTitle, setJobTitle] = useState(profile?.job_title || "");
   const [phone, setPhone] = useState((profile as any)?.phone || "");
@@ -504,7 +504,7 @@ export default function ProfileEditScreen() {
     };
   }, [user?.id]);
 
-  // ── Completeness ───────────────────────────────────────────────────────────
+  // -- Completeness -----------------------------------------------------------
   const completeness = calcCompleteness({
     bio,
     phone,
@@ -516,7 +516,7 @@ export default function ProfileEditScreen() {
     certifications,
   });
 
-  // ── AI Bio generation ──────────────────────────────────────────────────────
+  // -- AI Bio generation ------------------------------------------------------
   const handleGenerateBio = async () => {
     if (!jobTitle && !profile?.job_title) {
       return showToast(
@@ -558,7 +558,7 @@ export default function ProfileEditScreen() {
     }
   };
 
-  // ── AI Skills suggestion ───────────────────────────────────────────────────
+  // -- AI Skills suggestion ---------------------------------------------------
   const handleSuggestSkills = async () => {
     if (!jobTitle && !profile?.job_title) {
       return showToast("Add a job title first", "error");
@@ -598,7 +598,7 @@ export default function ProfileEditScreen() {
     }
   };
 
-  // ── Work Experience helpers ────────────────────────────────────────────────
+  // -- Work Experience helpers ------------------------------------------------
   const addExp = () =>
     setWorkExp((prev) => [
       ...prev,
@@ -655,7 +655,7 @@ export default function ProfileEditScreen() {
       ),
     );
 
-  // ── Education helpers ──────────────────────────────────────────────────────
+  // -- Education helpers ------------------------------------------------------
   const addEdu = () =>
     setEducation((prev) => [
       ...prev,
@@ -678,7 +678,7 @@ export default function ProfileEditScreen() {
       prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)),
     );
 
-  // ── Language helpers ───────────────────────────────────────────────────────
+  // -- Language helpers -------------------------------------------------------
   const addLang = () =>
     setLanguages((prev) => [...prev, { id: uid(), language: "", cefr: "B2" }]);
 
@@ -690,7 +690,7 @@ export default function ProfileEditScreen() {
       prev.map((l) => (l.id === id ? { ...l, [field]: value } : l)),
     );
 
-  // ── Certification helpers ──────────────────────────────────────────────────
+  // -- Certification helpers --------------------------------------------------
   const addCert = () =>
     setCertifications((prev) => [
       ...prev,
@@ -814,7 +814,7 @@ export default function ProfileEditScreen() {
     if (insertError) throw insertError;
   };
 
-  // ── Drive URL validation ───────────────────────────────────────────────────
+  // -- Drive URL validation ---------------------------------------------------
   const validateDriveUrl = (url: string): boolean => {
     if (!url.trim()) return true; // empty is fine
     return (
@@ -823,7 +823,7 @@ export default function ProfileEditScreen() {
     );
   };
 
-  // ── Save ───────────────────────────────────────────────────────────────────
+  // -- Save -------------------------------------------------------------------
   const handleSave = async () => {
     if (!fullName.trim()) return showToast("Full name is required", "error");
     if (!validateTestimonials()) return;
@@ -877,7 +877,7 @@ export default function ProfileEditScreen() {
             ...skillsStructured.soft,
             ...skillsStructured.tools,
           ],
-          // Design-specific field — only saved when present
+          // Design-specific field , only saved when present
           ...(isDesignUser && {
             design_portfolio_drive_url: designDriveUrl.trim(),
           }),
@@ -895,7 +895,7 @@ export default function ProfileEditScreen() {
     }
   };
 
-  // ── Completeness bar ───────────────────────────────────────────────────────
+  // -- Completeness bar -------------------------------------------------------
   const CompletenessBar = () => (
     <GlassCard padding={16} style={{ marginBottom: 20 }}>
       <View
@@ -976,7 +976,7 @@ export default function ProfileEditScreen() {
                 color: item.done ? COLORS.emerald : COLORS.fog,
               }}
             >
-              {item.done ? "✓" : "○"}
+              {item.done ? "Done" : "No"}
             </Text>
             <Text
               variant="caption"
@@ -994,7 +994,7 @@ export default function ProfileEditScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -1048,7 +1048,7 @@ export default function ProfileEditScreen() {
           >
             <CompletenessBar />
 
-            {/* ── ABOUT ME ────────────────────────────────────────────── */}
+            {/* -- ABOUT ME ---------------------------------------------- */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={User}
@@ -1122,14 +1122,14 @@ export default function ProfileEditScreen() {
                             marginLeft: 4,
                           }}
                         >
-                          {generatingBio ? "Generating…" : "Generate with AI"}
+                          {generatingBio ? "Generating..." : "Generate with AI"}
                         </Text>
                       </TouchableOpacity>
                     </View>
                     <TextInput
                       value={bio}
                       onChangeText={setBio}
-                      placeholder="Write a short professional summary…"
+                      placeholder="Write a short professional summary..."
                       placeholderTextColor={COLORS.fog}
                       multiline
                       maxLength={400}
@@ -1187,7 +1187,7 @@ export default function ProfileEditScreen() {
               )}
             </GlassCard>
 
-            {/* ── DESIGN PORTFOLIO (design users only) ──────────────────── */}
+            {/* -- DESIGN PORTFOLIO (design users only) -------------------- */}
             {isDesignUser && (
               <GlassCard padding={0} style={styles.sectionCard}>
                 <SectionHeader
@@ -1285,8 +1285,8 @@ export default function ProfileEditScreen() {
                         style={{ lineHeight: 18 }}
                       >
                         To create a shareable link:{"\n"}
-                        1. Open Google Drive → right-click your folder{"\n"}
-                        2. Share → Anyone with the link → Viewer{"\n"}
+                        1. Open Google Drive to right-click your folder{"\n"}
+                        2. Share to Anyone with the link to Viewer{"\n"}
                         3. Copy link and paste it above
                       </Text>
                     </View>
@@ -1295,7 +1295,7 @@ export default function ProfileEditScreen() {
               </GlassCard>
             )}
 
-            {/* ── WORK EXPERIENCE ───────────────────────────────────────── */}
+            {/* -- WORK EXPERIENCE ----------------------------------------- */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={Briefcase}
@@ -1389,14 +1389,14 @@ export default function ProfileEditScreen() {
                       {exp.achievements.map((ach, i) => (
                         <View key={i} style={styles.achieveRow}>
                           <Text style={{ color: COLORS.fog, marginRight: 8 }}>
-                            •
+                            -
                           </Text>
                           <TextInput
                             value={ach}
                             onChangeText={(v) =>
                               updateAchievement(exp.id, i, v)
                             }
-                            placeholder="e.g. Reduced load time by 40%…"
+                            placeholder="e.g. Reduced load time by 40%..."
                             placeholderTextColor={COLORS.fog}
                             style={[styles.input, { flex: 1, marginBottom: 0 }]}
                           />
@@ -1445,7 +1445,7 @@ export default function ProfileEditScreen() {
               )}
             </GlassCard>
 
-            {/* ── EDUCATION ─────────────────────────────────────────────── */}
+            {/* -- EDUCATION ----------------------------------------------- */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={GraduationCap}
@@ -1542,7 +1542,7 @@ export default function ProfileEditScreen() {
               )}
             </GlassCard>
 
-            {/* ── SKILLS ────────────────────────────────────────────────── */}
+            {/* -- SKILLS -------------------------------------------------- */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={Lightning}
@@ -1569,7 +1569,7 @@ export default function ProfileEditScreen() {
                       }))
                     }
                     color={COLORS.indigo}
-                    placeholder="e.g. Node.js, Python…"
+                    placeholder="e.g. Node.js, Python..."
                   />
                   <TagInput
                     label="Tools & Platforms"
@@ -1587,7 +1587,7 @@ export default function ProfileEditScreen() {
                       }))
                     }
                     color="#10B981"
-                    placeholder="e.g. Docker, AWS…"
+                    placeholder="e.g. Docker, AWS..."
                   />
                   <TagInput
                     label="Soft Skills"
@@ -1605,7 +1605,7 @@ export default function ProfileEditScreen() {
                       }))
                     }
                     color={COLORS.gold}
-                    placeholder="e.g. Leadership…"
+                    placeholder="e.g. Leadership..."
                   />
                   <TouchableOpacity
                     onPress={handleSuggestSkills}
@@ -1624,7 +1624,7 @@ export default function ProfileEditScreen() {
                       style={{ marginLeft: 8 }}
                     >
                       {generatingSkills
-                        ? "Suggesting…"
+                        ? "Suggesting..."
                         : "Suggest Skills with AI"}
                     </Text>
                   </TouchableOpacity>
@@ -1632,7 +1632,7 @@ export default function ProfileEditScreen() {
               )}
             </GlassCard>
 
-            {/* ── LANGUAGES ─────────────────────────────────────────────── */}
+            {/* -- LANGUAGES ----------------------------------------------- */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={ChatTeardrop}
@@ -1690,7 +1690,7 @@ export default function ProfileEditScreen() {
               )}
             </GlassCard>
 
-            {/* ── CERTIFICATIONS ────────────────────────────────────────── */}
+            {/* -- CERTIFICATIONS ------------------------------------------ */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={Certificate}
@@ -1753,7 +1753,7 @@ export default function ProfileEditScreen() {
               )}
             </GlassCard>
 
-            {/* ── LINKS ─────────────────────────────────────────────────── */}
+            {/* -- LINKS --------------------------------------------------- */}
             <GlassCard padding={0} style={styles.sectionCard}>
               <SectionHeader
                 icon={ChatTeardrop}
@@ -1912,7 +1912,7 @@ export default function ProfileEditScreen() {
                     label="LinkedIn URL"
                     value={linkedinUrl}
                     onChangeText={setLinkedinUrl}
-                    placeholder="https://linkedin.com/in/…"
+                    placeholder="https://linkedin.com/in/..."
                   />
                   {profile?.portfolio_url && (
                     <View style={styles.field}>
@@ -2077,9 +2077,9 @@ const styles = StyleSheet.create({
   aiBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(79,70,229,0.12)",
+    backgroundColor: "rgba(21,154,99,0.12)",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.3)",
+    borderColor: "rgba(21,154,99,0.12)",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,

@@ -27,13 +27,13 @@ import {
   ShieldCheck,
 } from "phosphor-react-native";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Password strength helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 interface PasswordStrength {
   score: number;
   label: string;
-  color: string; // plain string — not restricted to COLORS keys
+  color: string; // plain string , not restricted to COLORS keys
   checks: {
     label: string;
     passed: boolean;
@@ -43,15 +43,15 @@ interface PasswordStrength {
 function evaluatePassword(pw: string): PasswordStrength {
   const checks = [
     { label: "At least 8 characters", passed: pw.length >= 8 },
-    { label: "Uppercase letter (A–Z)", passed: /[A-Z]/.test(pw) },
-    { label: "Lowercase letter (a–z)", passed: /[a-z]/.test(pw) },
-    { label: "Number (0–9)", passed: /\d/.test(pw) },
+    { label: "Uppercase letter (A to Z)", passed: /[A-Z]/.test(pw) },
+    { label: "Lowercase letter (a to z)", passed: /[a-z]/.test(pw) },
+    { label: "Number (0 to 9)", passed: /\d/.test(pw) },
     { label: "Special character (!@#...)", passed: /[^A-Za-z0-9]/.test(pw) },
   ];
 
   const score = checks.filter((c) => c.passed).length;
 
-  // Use string literals throughout — avoids TypeScript literal-union mismatch
+  // Use string literals throughout , avoids TypeScript literal-union mismatch
   // with the COLORS const object whose values are `as const` string literals
   let label = "Too weak";
   let color = "#F43F5E"; // rose
@@ -74,9 +74,9 @@ function evaluatePassword(pw: string): PasswordStrength {
   return { score, label, color, checks };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 type Step = "set_password" | "success";
 
 export default function ResetPasswordScreen() {
@@ -97,7 +97,7 @@ export default function ResetPasswordScreen() {
 
   const strength = evaluatePassword(password);
 
-  // ── Wait for Supabase to establish the session from the deep-link token ────
+  // -- Wait for Supabase to establish the session from the deep-link token ----
   // When the user taps the reset link in their email:
   //   1. The OS opens the app via the deep link scheme (launchpad://reset-password?...)
   //   2. Supabase parses the #access_token fragment and calls onAuthStateChange
@@ -155,7 +155,7 @@ export default function ResetPasswordScreen() {
     }
   }, [step]);
 
-  // ── Handler ────────────────────────────────────────────────────────────────
+  // -- Handler ----------------------------------------------------------------
   const handleUpdatePassword = async () => {
     if (!password) {
       showToast("Please enter a new password", "error");
@@ -201,7 +201,7 @@ export default function ResetPasswordScreen() {
     }
   };
 
-  // ── Strength bar segments ─────────────────────────────────────────────────
+  // -- Strength bar segments -------------------------------------------------
   const renderStrengthBar = () => {
     if (!password) return null;
     const segments = 4;
@@ -233,7 +233,7 @@ export default function ResetPasswordScreen() {
           </Text>
         </View>
 
-        {/* Requirements checklist — shown while typing */}
+        {/* Requirements checklist , shown while typing */}
         <View style={{ marginTop: 10, gap: 6 }}>
           {strength.checks.map((check) => (
             <View key={check.label} style={styles.checkRow}>
@@ -258,7 +258,7 @@ export default function ResetPasswordScreen() {
     );
   };
 
-  // ── Success view ───────────────────────────────────────────────────────────
+  // -- Success view -----------------------------------------------------------
   const renderSuccess = () => (
     <Animated.View
       style={[
@@ -298,7 +298,7 @@ export default function ResetPasswordScreen() {
     </Animated.View>
   );
 
-  // ── Set-password form ─────────────────────────────────────────────────────
+  // -- Set-password form -----------------------------------------------------
   const renderForm = () => (
     <Animated.View
       style={[
@@ -307,7 +307,7 @@ export default function ResetPasswordScreen() {
       ]}
     >
       <LinearGradient
-        colors={["rgba(79,70,229,0.2)", "rgba(79,70,229,0.05)"]}
+        colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.12)"]}
         style={styles.formIconBg}
       >
         <Lock size={32} color={COLORS.indigo} weight="duotone" />
@@ -332,7 +332,7 @@ export default function ResetPasswordScreen() {
             color={COLORS.gold}
             style={{ lineHeight: 18 }}
           >
-            ⚠ Waiting for reset link verification. If this persists, tap the
+            Warning: Waiting for reset link verification. If this persists, tap the
             link in your email again to reopen this screen.
           </Text>
         </View>
@@ -436,7 +436,7 @@ export default function ResetPasswordScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.07)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   body: { flex: 1, paddingHorizontal: 24, paddingBottom: 48 },
-  // ── Form ──────────────────────────────────────────────────────────────────
+  // -- Form ------------------------------------------------------------------
   formContainer: { flex: 1 },
   formIconBg: {
     width: 68,
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.2)",
+    borderColor: "rgba(21,154,99,0.12)",
   },
   warningBanner: {
     backgroundColor: "rgba(245,158,11,0.08)",
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
   },
-  // ── Strength bar ──────────────────────────────────────────────────────────
+  // -- Strength bar ----------------------------------------------------------
   strengthBarRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  // ── Success ───────────────────────────────────────────────────────────────
+  // -- Success ---------------------------------------------------------------
   successContainer: {
     flex: 1,
     alignItems: "center",

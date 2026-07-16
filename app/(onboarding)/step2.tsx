@@ -98,7 +98,7 @@ export default function Step2Screen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(6,182,212,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.08)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -160,7 +160,7 @@ export default function Step2Screen() {
                     >
                       {selected && (
                         <Text variant="caption" color={COLORS.white}>
-                          ✓
+                          Done
                         </Text>
                       )}
                     </View>

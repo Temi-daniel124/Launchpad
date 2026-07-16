@@ -36,7 +36,7 @@ interface Profile {
   auto_apply_consent_timestamp: string | null;
   cv_pdf_url: string | null;
   design_portfolio_drive_url?: string | null;
-  // ── BUG #2 FIX: profession routing ────────────────────────────────────────
+  // -- BUG #2 FIX: profession routing ----------------------------------------
   profession_type: "tech" | "design" | null;
 }
 

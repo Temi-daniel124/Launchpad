@@ -168,7 +168,7 @@ export default function SecurityScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -309,7 +309,7 @@ export default function SecurityScreen() {
                       weight="fill"
                     />
                     <Text variant="caption" color={COLORS.emerald}>
-                      Active — fingerprint sign-in is enabled
+                      Active , fingerprint sign-in is enabled
                     </Text>
                   </View>
                 )}
@@ -337,7 +337,7 @@ export default function SecurityScreen() {
                 },
                 {
                   label: "Auth tokens stored securely",
-                  detail: "Device Secure Store — never in plain storage",
+                  detail: "Device Secure Store , never in plain storage",
                 },
                 {
                   label: "We never sell your data",

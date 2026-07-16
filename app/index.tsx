@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
-import { View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../stores/authStore";
-import { COLORS } from "../constants/theme";
+import { ProgressState } from "../components/ui/ProgressState";
 
 export default function Index() {
   const { session, profile, isLoading } = useAuthStore();
@@ -19,13 +18,13 @@ export default function Index() {
     // Don't do anything while auth is still loading
     if (isLoading) return;
 
-    // No session → welcome screen
+    // No session to welcome screen
     if (!session) {
       navigate("/(auth)/welcome");
       return;
     }
 
-    // Session exists but profile hasn't loaded yet — wait for it.
+    // Session exists but profile hasn't loaded yet , wait for it.
     // Reduced from 8 seconds to 3 seconds to avoid perceived infinite loading.
     // On timeout: check DB one more time before giving up.
     if (profile === null) {
@@ -41,7 +40,7 @@ export default function Index() {
             .single();
 
           if (data) {
-            // Profile exists — route based on onboarding status
+            // Profile exists , route based on onboarding status
             navigate(
               data.onboarding_completed
                 ? "/(tabs)/home"
@@ -53,14 +52,14 @@ export default function Index() {
             navigate("/(onboarding)/step1");
           }
         } catch {
-          // DB error — route to onboarding for new users, not sign-in
+          // DB error , route to onboarding for new users, not sign-in
           navigate("/(onboarding)/step1");
         }
       }, 3000);
       return () => clearTimeout(timer);
     }
 
-    // Profile is loaded — route based on onboarding status
+    // Profile is loaded , route based on onboarding status
     if (profile.onboarding_completed) {
       navigate("/(tabs)/home");
     } else {
@@ -69,15 +68,14 @@ export default function Index() {
   }, [isLoading, session, profile]);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: COLORS.abyss,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <ActivityIndicator color={COLORS.indigo} size="large" />
-    </View>
+    <ProgressState
+      title="Opening Launchpad"
+      steps={[
+        "Checking your sign-in session",
+        "Reading your profile",
+        "Sending you to the right screen",
+      ]}
+      activeStep={isLoading ? 0 : session && !profile ? 1 : 2}
+    />
   );
 }

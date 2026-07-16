@@ -1,20 +1,37 @@
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import "react-native-url-polyfill/auto";
 
 const supabaseUrl = "https://oovunzthzfhructpulbz.supabase.co";
 const supabaseAnonKey = "sb_publishable_e4d9hlJUFsC97CATPZuyjA_USsQQ1Lf";
 
-// Secure storage adapter — JWT never touches AsyncStorage
+// Secure storage adapter. JWT never touches AsyncStorage on native.
+const WebStorageAdapter = {
+  getItem: (key: string) =>
+    Promise.resolve(globalThis.localStorage?.getItem(key) ?? null),
+  setItem: (key: string, value: string) => {
+    globalThis.localStorage?.setItem(key, value);
+    return Promise.resolve();
+  },
+  removeItem: (key: string) => {
+    globalThis.localStorage?.removeItem(key);
+    return Promise.resolve();
+  },
+};
+
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => SecureStore.getItemAsync(key),
   setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
   removeItem: (key: string) => SecureStore.deleteItemAsync(key),
 };
 
+const authStorage =
+  Platform.OS === "web" ? WebStorageAdapter : ExpoSecureStoreAdapter;
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: ExpoSecureStoreAdapter,
+    storage: authStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,

@@ -38,12 +38,12 @@ import {
 
 const { width } = Dimensions.get("window");
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AI Career tips — shown daily, rotated by day of year
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// AI Career tips , shown daily, rotated by day of year
+// -----------------------------------------------------------------------------
 const CAREER_TIPS = [
   {
-    tip: "Tailor your CV summary to each job description. Mirror the exact language the employer uses — ATS systems score keyword density.",
+    tip: "Tailor your CV summary to each job description. Mirror the exact language the employer uses , ATS systems score keyword density.",
     category: "CV Strategy",
   },
   {
@@ -55,7 +55,7 @@ const CAREER_TIPS = [
     category: "Networking",
   },
   {
-    tip: "The best time to send a job application is Tuesday to Thursday between 10am–11am — hiring managers are most responsive then.",
+    tip: "The best time to send a job application is Tuesday to Thursday between 10am to 11am , hiring managers are most responsive then.",
     category: "Timing",
   },
   {
@@ -79,7 +79,7 @@ const CAREER_TIPS = [
     category: "Interviews",
   },
   {
-    tip: "Your LinkedIn 'About' section should open with a hook — your biggest career achievement in the first two lines before 'see more'.",
+    tip: "Your LinkedIn 'About' section should open with a hook , your biggest career achievement in the first two lines before 'see more'.",
     category: "LinkedIn",
   },
 ];
@@ -92,9 +92,9 @@ function getTodaysTip() {
   return CAREER_TIPS[dayOfYear % CAREER_TIPS.length];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Profile completeness calculator
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function calcProfileCompleteness(profile: any): {
   score: number;
   missing: string[];
@@ -152,9 +152,9 @@ function calcProfileCompleteness(profile: any): {
   return { score: Math.round((done / checks.length) * 100), missing };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Animated progress bar
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function ProfileCompletenessBar({ score }: { score: number }) {
   const widthAnim = useRef(new Animated.Value(0)).current;
 
@@ -189,9 +189,9 @@ function ProfileCompletenessBar({ score }: { score: number }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Animated stat number
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function AnimatedStat({ value, color }: { value: number; color: string }) {
   const animVal = useRef(new Animated.Value(0)).current;
   const [display, setDisplay] = useState(0);
@@ -220,9 +220,9 @@ function AnimatedStat({ value, color }: { value: number; color: string }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MAIN SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 export default function HomeScreen() {
   const { profile, fetchProfile, user } = useAuthStore();
   const [recentJobs, setRecentJobs] = useState<any[]>([]);
@@ -320,14 +320,14 @@ export default function HomeScreen() {
       icon: Globe,
       label: "Portfolio",
       color: COLORS.indigo,
-      bg: "rgba(79,70,229,0.12)",
+      bg: "rgba(21,154,99,0.12)",
       route: "/(tabs)/portfolio",
     },
     {
       icon: Briefcase,
       label: "Find Jobs",
       color: COLORS.cyan,
-      bg: "rgba(6,182,212,0.12)",
+      bg: "rgba(21,154,99,0.12)",
       route: "/(tabs)/jobs",
     },
     {
@@ -349,7 +349,7 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.1)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -371,7 +371,7 @@ export default function HomeScreen() {
             />
           }
         >
-          {/* ── Header ──────────────────────────────────────────────────── */}
+          {/* -- Header ---------------------------------------------------- */}
           <View style={styles.header}>
             <View>
               <Text
@@ -422,7 +422,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ── Trial / Expired banners ──────────────────────────────────── */}
+          {/* -- Trial / Expired banners ------------------------------------ */}
           {isTrialActive && (
             <GlassCard
               variant="bordered"
@@ -496,7 +496,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
 
-          {/* ── Profile Completeness Card (Bug #9) ───────────────────────── */}
+          {/* -- Profile Completeness Card (Bug #9) ------------------------- */}
           <GlassCard style={{ marginBottom: 16 }} padding={18}>
             <View
               style={{
@@ -512,7 +512,7 @@ export default function HomeScreen() {
                 <View
                   style={[
                     styles.sectionIconBg,
-                    { backgroundColor: "rgba(79,70,229,0.15)" },
+                    { backgroundColor: "rgba(21,154,99,0.12)" },
                   ]}
                 >
                   <TrendUp size={15} color={COLORS.indigo} weight="bold" />
@@ -559,9 +559,9 @@ export default function HomeScreen() {
             >
               <Text style={{ fontSize: 11, color: COLORS.fog }}>
                 {completenessScore < 40
-                  ? "Weak — add more details"
+                  ? "Weak , add more details"
                   : completenessScore < 70
-                    ? "Good — keep going"
+                    ? "Good , keep going"
                     : "Strong profile"}
               </Text>
               {missingFields.length > 0 && (
@@ -576,7 +576,7 @@ export default function HomeScreen() {
                       fontWeight: "600",
                     }}
                   >
-                    +{missingFields.length} missing →
+                    +{missingFields.length} missing to
                   </Text>
                 </TouchableOpacity>
               )}
@@ -607,7 +607,7 @@ export default function HomeScreen() {
             )}
           </GlassCard>
 
-          {/* ── Quick Actions ────────────────────────────────────────────── */}
+          {/* -- Quick Actions ---------------------------------------------- */}
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map((action, i) => {
@@ -649,7 +649,7 @@ export default function HomeScreen() {
             })}
           </View>
 
-          {/* ── AI Career Tip of the Day (Bug #9) ───────────────────────── */}
+          {/* -- AI Career Tip of the Day (Bug #9) ------------------------- */}
           <LinearGradient
             colors={["rgba(16,185,129,0.12)", "rgba(16,185,129,0.04)"]}
             style={styles.tipCard}
@@ -702,7 +702,7 @@ export default function HomeScreen() {
             </View>
           </LinearGradient>
 
-          {/* ── Portfolio Status ────────────────────────────────────────── */}
+          {/* -- Portfolio Status ------------------------------------------ */}
           <GlassCard style={{ marginBottom: 16 }} padding={18}>
             <View
               style={{
@@ -769,7 +769,7 @@ export default function HomeScreen() {
             )}
           </GlassCard>
 
-          {/* ── Stats Row (Bug #9 — job search count + CV count) ─────────── */}
+          {/* -- Stats Row (Bug #9 , job search count + CV count) ----------- */}
           <GlassCard style={{ marginBottom: 16 }} padding={18}>
             <View
               style={{
@@ -782,7 +782,7 @@ export default function HomeScreen() {
               <View
                 style={[
                   styles.sectionIconBg,
-                  { backgroundColor: "rgba(6,182,212,0.15)" },
+                  { backgroundColor: "rgba(21,154,99,0.15)" },
                 ]}
               >
                 <Lightning size={14} color={COLORS.cyan} weight="bold" />
@@ -842,7 +842,7 @@ export default function HomeScreen() {
             </View>
           </GlassCard>
 
-          {/* ── Latest Matches ───────────────────────────────────────────── */}
+          {/* -- Latest Matches --------------------------------------------- */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Latest Matches</Text>
             <TouchableOpacity
@@ -906,7 +906,7 @@ export default function HomeScreen() {
                           marginTop: 3,
                         }}
                       >
-                        {job.company} {job.location ? `· ${job.location}` : ""}
+                        {job.company} {job.location ? `- ${job.location}` : ""}
                       </Text>
                     </View>
                     <StatusBadge
@@ -1114,9 +1114,9 @@ const styles = StyleSheet.create({
   urlChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(6,182,212,0.08)",
+    backgroundColor: "rgba(21,154,99,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.25)",
+    borderColor: "rgba(21,154,99,0.25)",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 9,
@@ -1138,8 +1138,8 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.3)",
-    backgroundColor: "rgba(79,70,229,0.08)",
+    borderColor: "rgba(21,154,99,0.12)",
+    backgroundColor: "rgba(21,154,99,0.12)",
   },
   skeletonCard: {
     backgroundColor: COLORS.navy,

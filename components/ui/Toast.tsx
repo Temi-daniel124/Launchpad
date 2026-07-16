@@ -60,7 +60,7 @@ export const Toast: React.FC = () => {
       iconColor: COLORS.rose,
     },
     info: {
-      bg: "rgba(79, 70, 229, 0.15)",
+      bg: "rgba(21,154,99,0.12)",
       border: COLORS.indigo,
       Icon: Info,
       iconColor: COLORS.indigo,

@@ -8,11 +8,12 @@ import * as SplashScreen from "expo-splash-screen";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../stores/authStore";
+import { COLORS, IS_DARK_THEME } from "../constants/theme";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
 
-// Safety timeout — if fonts/auth take > 8s, hide splash anyway so app never freezes
+// Safety timeout , if fonts/auth take > 8s, hide splash anyway so app never freezes
 const SPLASH_TIMEOUT_MS = 8000;
 
 export default function RootLayout() {
@@ -129,7 +130,7 @@ export default function RootLayout() {
       }
     });
 
-    // ── AppState listener — re-validates session when app comes back to foreground
+    // -- AppState listener , re-validates session when app comes back to foreground
     // Prevents stale sessions and auth freeze after device sleep/resume
     const handleAppStateChange = (nextState: AppStateStatus) => {
       if (nextState === "active") {
@@ -157,11 +158,14 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="light" backgroundColor="#080E1A" />
+      <StatusBar
+        style={IS_DARK_THEME ? "light" : "dark"}
+        backgroundColor={COLORS.abyss}
+      />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#080E1A" },
+          contentStyle: { backgroundColor: COLORS.abyss },
         }}
       >
         <Stack.Screen name="index" />

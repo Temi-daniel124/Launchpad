@@ -73,7 +73,7 @@ export default function WelcomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.15)", "transparent", "rgba(6,182,212,0.08)"]}
+        colors={["rgba(21,154,99,0.12)", "transparent", "rgba(21,154,99,0.08)"]}
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -193,7 +193,7 @@ export default function WelcomeScreen() {
               size="lg"
             />
             <Text variant="caption" align="center" style={{ marginTop: 16 }}>
-              7-day free trial • No credit card required
+              7-day free trial - No credit card required
             </Text>
           </View>
         </Animated.View>

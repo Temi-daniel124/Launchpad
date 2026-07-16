@@ -210,7 +210,7 @@ export default function SignInScreen() {
     }
   };
 
-  // ── Navigate to Forgot Password ────────────────────────────────────────────
+  // -- Navigate to Forgot Password --------------------------------------------
   // The screen lives at app/(auth)/forgot-password.tsx
   const handleForgotPassword = () => {
     router.push("/(auth)/forgot-password");
@@ -219,7 +219,7 @@ export default function SignInScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(6,182,212,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.08)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -281,7 +281,7 @@ export default function SignInScreen() {
                 />
               </View>
 
-              {/* ✅ FIXED: now navigates to forgot-password screen */}
+              {/*  FIXED: now navigates to forgot-password screen */}
               <TouchableOpacity
                 onPress={handleForgotPassword}
                 style={{ alignSelf: "flex-end", marginBottom: 28 }}
@@ -299,7 +299,7 @@ export default function SignInScreen() {
                 size="lg"
               />
 
-              {/* Biometric — only shown when available and enabled */}
+              {/* Biometric , only shown when available and enabled */}
               {biometricEnabled && !loading && (
                 <TouchableOpacity
                   style={styles.biometricBtn}

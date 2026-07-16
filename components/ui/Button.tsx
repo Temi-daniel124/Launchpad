@@ -5,10 +5,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   ViewStyle,
-  TextStyle,
   Animated,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "./Text";
 import { COLORS, RADIUS } from "../../constants/theme";
 
@@ -115,30 +113,11 @@ export const Button: React.FC<ButtonProps> = ({
           variant === "secondary" && styles.secondary,
           variant === "ghost" && styles.ghost,
           variant === "danger" && styles.danger,
+          variant === "gold" && styles.warning,
           (disabled || loading) && styles.disabled,
           !fullWidth && { paddingHorizontal: 24, width: "auto" },
         ]}
       >
-        {variant === "primary" && (
-          <LinearGradient
-            colors={
-              disabled || loading
-                ? ["#2D2D5E", "#2D2D5E"]
-                : ["#4F46E5", "#6366F1"]
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
-        {variant === "gold" && (
-          <LinearGradient
-            colors={["#F59E0B", "#D97706"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
         {renderContent()}
       </TouchableOpacity>
     </Animated.View>
@@ -151,6 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    backgroundColor: COLORS.indigo,
   },
   contentRow: {
     flexDirection: "row",
@@ -158,19 +138,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   secondary: {
-    backgroundColor: "transparent",
-    borderWidth: 1.5,
+    backgroundColor: "rgba(21, 154, 99, 0.12)",
+    borderWidth: 1,
     borderColor: COLORS.indigo,
   },
   ghost: {
-    backgroundColor: "rgba(79, 70, 229, 0.08)",
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "rgba(79, 70, 229, 0.15)",
+    borderColor: COLORS.rim,
   },
   danger: {
-    backgroundColor: "rgba(244, 63, 94, 0.15)",
-    borderWidth: 1,
-    borderColor: COLORS.rose,
+    backgroundColor: COLORS.rose,
+  },
+  warning: {
+    backgroundColor: COLORS.gold,
   },
   disabled: {
     opacity: 0.5,

@@ -148,7 +148,7 @@ export default function ProfileScreen() {
       showToast(
         status === "granted"
           ? "Notifications enabled"
-          : "Notifications blocked — enable in device Settings",
+          : "Notifications blocked , enable in device Settings",
         status === "granted" ? "success" : "error",
       );
     } catch {
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
   const handleSecurityPrivacy = () => {
     Alert.alert(
       "Security & Privacy",
-      "• Your data is encrypted at rest with Supabase\n• JWT tokens are stored in device Secure Store\n• We never sell your personal data\n• You can delete all your data at any time\n\nFor full details, see our Privacy Policy.",
+      "- Your data is encrypted at rest with Supabase\n- JWT tokens are stored in device Secure Store\n- We never sell your personal data\n- You can delete all your data at any time\n\nFor full details, see our Privacy Policy.",
       [
         {
           text: "View Privacy Policy",
@@ -190,7 +190,7 @@ export default function ProfileScreen() {
           {
             backgroundColor: danger
               ? "rgba(244,63,94,0.1)"
-              : "rgba(79,70,229,0.08)",
+              : "rgba(21,154,99,0.12)",
           },
         ]}
       >
@@ -215,7 +215,7 @@ export default function ProfileScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -227,7 +227,7 @@ export default function ProfileScreen() {
         >
           {/* Profile Header */}
           <View style={styles.profileHeader}>
-            {/* Section 5A — show photo if available, fallback to gradient initial */}
+            {/* Section 5A , show photo if available, fallback to gradient initial */}
             {profile?.profile_photo_url ? (
               <Image
                 source={{ uri: profile.profile_photo_url }}
@@ -276,7 +276,7 @@ export default function ProfileScreen() {
           {profile?.subscription_status !== "active" && (
             <TouchableOpacity activeOpacity={0.9} style={{ marginBottom: 16 }}>
               <LinearGradient
-                colors={["rgba(79,70,229,0.2)", "rgba(6,182,212,0.1)"]}
+                colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.08)"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.upgradeCard}
@@ -287,7 +287,7 @@ export default function ProfileScreen() {
                     Upgrade to Pro
                   </Text>
                   <Text variant="caption">
-                    $9.99/month or $79.99/year — 33% off
+                    $9.99/month or $79.99/year , 33% off
                   </Text>
                 </View>
                 <ArrowSquareOut size={18} color={COLORS.gold} />
@@ -322,7 +322,7 @@ export default function ProfileScreen() {
               showChevron={false}
             />
             <View style={styles.divider} />
-            {/* Section 6A — Portfolio opens live URL */}
+            {/* Section 6A , Portfolio opens live URL */}
             <MenuItem
               icon={Globe}
               label="Portfolio"
@@ -336,7 +336,7 @@ export default function ProfileScreen() {
               }}
             />
             <View style={styles.divider} />
-            {/* Section 6A — GitHub opens profile or navigates to edit */}
+            {/* Section 6A , GitHub opens profile or navigates to edit */}
             <MenuItem
               icon={GithubLogo}
               label="GitHub"
@@ -383,21 +383,21 @@ export default function ProfileScreen() {
                 Settings
               </Text>
             </View>
-            {/* Section 6B — Security & Privacy */}
+            {/* Section 6B , Security & Privacy */}
             <MenuItem
               icon={Shield}
               label="Security & Privacy"
               onPress={() => router.push("/(tabs)/profile/security" as any)}
             />
             <View style={styles.divider} />
-            {/* Section 6B — Notifications */}
+            {/* Section 6B , Notifications */}
             <MenuItem
               icon={Bell}
               label="Notifications"
               onPress={handleNotifications}
             />
             <View style={styles.divider} />
-            {/* Section 6B — Terms & Privacy via browser */}
+            {/* Section 6B , Terms & Privacy via browser */}
             <MenuItem
               icon={Info}
               label="Terms of Service"
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.3)",
+    borderColor: "rgba(21,154,99,0.12)",
   },
   sectionTitle: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8 },
   menuItem: {

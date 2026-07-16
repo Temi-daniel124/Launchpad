@@ -80,10 +80,10 @@ export default function ForgotPasswordScreen() {
 
     setLoading(true);
     try {
-      // ✅ FIX: redirectTo must match EXACTLY the scheme in app.json / app.config.js
-      // The scheme is "com.vooltgroup.launchpad" → deep link = "com.vooltgroup.launchpad://reset-password"
-      // This was previously "launchpad://reset-password" which is WRONG — the app never received the link
-      // Also add this URL to Supabase Auth → URL Configuration → Redirect URLs
+      //  FIX: redirectTo must match EXACTLY the scheme in app.json / app.config.js
+      // The scheme is "com.vooltgroup.launchpad" to deep link = "com.vooltgroup.launchpad://reset-password"
+      // This was previously "launchpad://reset-password" which is WRONG , the app never received the link
+      // Also add this URL to Supabase Auth to URL Configuration to Redirect URLs
       const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
         redirectTo: "com.vooltgroup.launchpad://reset-password",
       });
@@ -159,7 +159,7 @@ export default function ForgotPasswordScreen() {
         </Text>
         <Text variant="caption" color={COLORS.slate} style={{ lineHeight: 19 }}>
           Open the reset email on your phone and tap "Reset Password" inside the
-          Launchpad app. Opening it in a web browser will show a blank page —
+          Launchpad app. Opening it in a web browser will show a blank page ,
           this is expected. The link is designed to open the mobile app
           directly.
         </Text>
@@ -225,7 +225,7 @@ export default function ForgotPasswordScreen() {
       ]}
     >
       <LinearGradient
-        colors={["rgba(79,70,229,0.2)", "rgba(79,70,229,0.05)"]}
+        colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.12)"]}
         style={styles.formIconBg}
       >
         <LockKey size={32} color={COLORS.indigo} weight="duotone" />
@@ -285,7 +285,7 @@ export default function ForgotPasswordScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.07)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.2)",
+    borderColor: "rgba(21,154,99,0.12)",
   },
   backToSignIn: {
     flexDirection: "row",
@@ -380,9 +380,9 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 8,
-    backgroundColor: "rgba(79,70,229,0.15)",
+    backgroundColor: "rgba(21,154,99,0.12)",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.3)",
+    borderColor: "rgba(21,154,99,0.12)",
     justifyContent: "center",
     alignItems: "center",
   },

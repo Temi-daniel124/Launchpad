@@ -64,7 +64,7 @@ export default function Step7Screen() {
 
     // Advise user to create international CV if no CVs exist
     if (next && !profile?.portfolio_url) {
-      // The advice will show in the info box below — no toast needed
+      // The advice will show in the info box below , no toast needed
     }
   };
 
@@ -167,7 +167,7 @@ export default function Step7Screen() {
             A few final steps before your career launches.
           </Text>
 
-          {/* ── Notifications ───────────────────────────────────────── */}
+          {/* -- Notifications ----------------------------------------- */}
           <GlassCard style={{ marginBottom: 12 }}>
             <View
               style={{
@@ -202,7 +202,7 @@ export default function Step7Screen() {
             />
           </GlassCard>
 
-          {/* ── Auto Apply ──────────────────────────────────────────── */}
+          {/* -- Auto Apply -------------------------------------------- */}
           <GlassCard style={{ marginBottom: 12 }}>
             {/* Header toggle */}
             <TouchableOpacity
@@ -217,7 +217,7 @@ export default function Step7Screen() {
               <LinearGradient
                 colors={
                   autoApplyEnabled
-                    ? ["rgba(6,182,212,0.2)", "rgba(6,182,212,0.05)"]
+                    ? ["rgba(21,154,99,0.2)", "rgba(21,154,99,0.05)"]
                     : ["rgba(71,85,105,0.2)", "rgba(71,85,105,0.05)"]
                 }
                 style={styles.autoApplyIcon}
@@ -354,7 +354,7 @@ export default function Step7Screen() {
             )}
           </GlassCard>
 
-          {/* ── Legal Checkboxes ─────────────────────────────────────── */}
+          {/* -- Legal Checkboxes --------------------------------------- */}
           <GlassCard style={{ marginBottom: 24 }}>
             <CheckItem
               label="I consent to Launchpad processing my career data to generate my portfolio, match jobs, and create my CV. I can delete my data at any time."
@@ -461,10 +461,10 @@ const styles = StyleSheet.create({
   infoBox: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "rgba(6,182,212,0.06)",
+    backgroundColor: "rgba(21,154,99,0.06)",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.2)",
+    borderColor: "rgba(21,154,99,0.2)",
     padding: 14,
   },
 });

@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
-import { COLORS } from "../../constants/theme";
+import { ProgressState } from "../../components/ui/ProgressState";
 
 export default function AuthCallbackScreen() {
   const params = useLocalSearchParams();
@@ -50,10 +49,10 @@ export default function AuthCallbackScreen() {
             })
             .eq("id", session.user.id);
 
-          // Navigate forward in onboarding — NOT back to step 1
+          // Navigate forward in onboarding , NOT back to step 1
           router.replace("/(onboarding)/step6");
         } else {
-          // Logged in but no GitHub data — could be email/magic link
+          // Logged in but no GitHub data , could be email/magic link
           // Check if onboarding is complete
           const { data: profile } = await supabase
             .from("profiles")
@@ -68,7 +67,7 @@ export default function AuthCallbackScreen() {
           }
         }
       } else {
-        // No session — GitHub OAuth failed, send back to step 5 to retry
+        // No session , GitHub OAuth failed, send back to step 5 to retry
         router.replace("/(onboarding)/step5");
       }
     } catch (error) {
@@ -78,15 +77,14 @@ export default function AuthCallbackScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: COLORS.abyss,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <ActivityIndicator color={COLORS.indigo} size="large" />
-    </View>
+    <ProgressState
+      title="Finishing sign-in"
+      steps={[
+        "Confirming your secure session",
+        "Checking your profile",
+        "Returning you to Launchpad",
+      ]}
+      activeStep={1}
+    />
   );
 }

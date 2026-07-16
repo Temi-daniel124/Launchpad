@@ -19,9 +19,9 @@ import { useUIStore } from "../../stores/uiStore";
 import { COLORS } from "../../constants/theme";
 import { Briefcase } from "phosphor-react-native";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TECH JOBS — require GitHub, routed to step2 (GitHub connect)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// TECH JOBS , require GitHub, routed to step2 (GitHub connect)
+// -----------------------------------------------------------------------------
 const TECH_JOBS = [
   "Backend Developer",
   "Frontend Developer",
@@ -48,7 +48,7 @@ const TECH_JOBS = [
   "Business Analyst",
 ];
 
-// NON-TECH / Design jobs — skip GitHub step, routed to step3
+// NON-TECH / Design jobs , skip GitHub step, routed to step3
 const DESIGN_JOBS = [
   "UI/UX Designer",
   "Product Designer",
@@ -94,14 +94,14 @@ const INDUSTRIES = [
 
 const EXPERIENCE_LEVELS = [
   { key: "student", label: "Student", desc: "Currently studying" },
-  { key: "junior", label: "Junior", desc: "0–2 years" },
-  { key: "mid", label: "Mid-level", desc: "3–5 years" },
+  { key: "junior", label: "Junior", desc: "0 to 2 years" },
+  { key: "mid", label: "Mid-level", desc: "3 to 5 years" },
   { key: "senior", label: "Senior", desc: "6+ years" },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Helper: detect tech vs design profession
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function isTechJob(title: string): boolean {
   const lower = title.toLowerCase().trim();
   // Exact match first
@@ -118,9 +118,9 @@ function isBlockedCareer(title: string): boolean {
   return BLOCKED_CAREERS.some((career) => career.toLowerCase() === lower);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 export default function Step1Screen() {
   const { updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
@@ -170,8 +170,8 @@ export default function Step1Screen() {
       setLoading(false);
     }
 
-    // Tech users → step2 (GitHub connection)
-    // Design/non-tech users → step3 (skip GitHub)
+    // Tech users to step2 (GitHub connection)
+    // Design/non-tech users to step3 (skip GitHub)
     if (professionType === "tech") {
       router.push("/(onboarding)/step2");
     } else {
@@ -182,7 +182,7 @@ export default function Step1Screen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.1)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -196,7 +196,7 @@ export default function Step1Screen() {
         >
           <View style={styles.iconRow}>
             <LinearGradient
-              colors={["rgba(79,70,229,0.2)", "rgba(79,70,229,0.05)"]}
+              colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.12)"]}
               style={styles.iconGradient}
             >
               <Briefcase size={32} color={COLORS.indigo} weight="duotone" />
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.2)",
+    borderColor: "rgba(21,154,99,0.12)",
   },
   suggestions: {
     position: "absolute",
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.rim,
   },
   chipSelected: {
-    backgroundColor: "rgba(79,70,229,0.2)",
+    backgroundColor: "rgba(21,154,99,0.12)",
     borderColor: COLORS.indigo,
   },
   levelCard: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   levelCardSelected: {
     borderColor: COLORS.indigo,
-    backgroundColor: "rgba(79,70,229,0.08)",
+    backgroundColor: "rgba(21,154,99,0.12)",
   },
   levelRadio: {
     width: 20,

@@ -45,9 +45,9 @@ import {
   Palette,
 } from "phosphor-react-native";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const ZIP_PENDING_TIMEOUT_MS = 90_000;
 
 const TECH_PROGRESS_STEPS = [
@@ -66,9 +66,9 @@ const DESIGN_PROGRESS_STEPS = [
   "Portfolio is live!",
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function formatDeployTime(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
@@ -105,9 +105,9 @@ function getDeployStatus(dep: any): {
   return { label: "Building", variant: "warning" };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MAIN SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 export default function PortfolioScreen() {
   const { profile, fetchProfile, user, updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
@@ -153,7 +153,7 @@ export default function PortfolioScreen() {
     }
   }, [profile]);
 
-  // ── Setup ──────────────────────────────────────────────────────────────────
+  // -- Setup ------------------------------------------------------------------
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -195,7 +195,7 @@ export default function PortfolioScreen() {
     };
   }, [user]);
 
-  // ── Progress animation ─────────────────────────────────────────────────────
+  // -- Progress animation -----------------------------------------------------
   useEffect(() => {
     if (!generating) return;
     clearProgressInterval();
@@ -237,7 +237,7 @@ export default function PortfolioScreen() {
     }, 2000);
   }, [user]);
 
-  // ── Data loading ───────────────────────────────────────────────────────────
+  // -- Data loading -----------------------------------------------------------
   const loadDeployments = useCallback(async () => {
     if (!user) return;
     try {
@@ -262,7 +262,7 @@ export default function PortfolioScreen() {
     setRefreshing(false);
   }, [user]);
 
-  // ── ZIP state ──────────────────────────────────────────────────────────────
+  // -- ZIP state --------------------------------------------------------------
   const latestReadyDeployment = useMemo(
     () => deployments.find((d) => d.deploy_status === "READY"),
     [deployments],
@@ -276,7 +276,7 @@ export default function PortfolioScreen() {
     return age > ZIP_PENDING_TIMEOUT_MS;
   }, [latestReadyDeployment, zipUrl]);
 
-  // ── Generate card bullets ──────────────────────────────────────────────────
+  // -- Generate card bullets --------------------------------------------------
   const generateBullets = useMemo(() => {
     if (isDesignUser) {
       return [
@@ -294,7 +294,7 @@ export default function PortfolioScreen() {
     ];
   }, [isDesignUser]);
 
-  // ── Drive link handler (design users only) ─────────────────────────────────
+  // -- Drive link handler (design users only) ---------------------------------
   const handleSaveDriveLink = useCallback(async () => {
     const trimmed = driveLinkInput.trim();
     if (!trimmed) return;
@@ -308,7 +308,7 @@ export default function PortfolioScreen() {
     setSavingDriveLink(true);
     try {
       await updateProfile({ design_portfolio_drive_url: trimmed } as any);
-      showToast("Drive link saved! ✓", "success");
+      showToast("Drive link saved! Done", "success");
     } catch {
       showToast("Could not save link", "error");
     } finally {
@@ -316,7 +316,7 @@ export default function PortfolioScreen() {
     }
   }, [driveLinkInput]);
 
-  // ── ZIP download ───────────────────────────────────────────────────────────
+  // -- ZIP download -----------------------------------------------------------
   const handleDownloadZip = useCallback(async () => {
     if (!zipUrl) return;
     try {
@@ -329,7 +329,7 @@ export default function PortfolioScreen() {
     }
   }, [zipUrl]);
 
-  // ── Generation ─────────────────────────────────────────────────────────────
+  // -- Generation -------------------------------------------------------------
   const handleGeneratePress = useCallback(() => {
     const career = String((profile as any)?.career_type || profile?.job_title || "")
       .trim()
@@ -453,11 +453,11 @@ export default function PortfolioScreen() {
     if (profile?.portfolio_url) Linking.openURL(profile.portfolio_url);
   }, [profile]);
 
-  // ── RENDER ─────────────────────────────────────────────────────────────────
+  // -- RENDER -----------------------------------------------------------------
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.1)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -484,7 +484,7 @@ export default function PortfolioScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ──────────────────────────────────────────────────── */}
+          {/* -- Header ---------------------------------------------------- */}
           <View style={styles.header}>
             <View>
               <Text variant="h1">Portfolio</Text>
@@ -510,7 +510,7 @@ export default function PortfolioScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ── Generation progress ──────────────────────────────────────── */}
+          {/* -- Generation progress ---------------------------------------- */}
           {generating && (
             <GlassCard
               variant="bordered"
@@ -589,14 +589,14 @@ export default function PortfolioScreen() {
                     style={{ marginLeft: 6, textDecorationLine: "underline" }}
                     numberOfLines={1}
                   >
-                    {profile?.portfolio_url || "Opening…"}
+                    {profile?.portfolio_url || "Opening..."}
                   </Text>
                 </TouchableOpacity>
               )}
             </GlassCard>
           )}
 
-          {/* ── Live portfolio card ──────────────────────────────────────── */}
+          {/* -- Live portfolio card ---------------------------------------- */}
           {profile?.portfolio_url && !generating && (
             <GlassCard
               variant="elevated"
@@ -609,7 +609,7 @@ export default function PortfolioScreen() {
                     Portfolio Live
                   </Text>
                   <StatusBadge
-                    label="● Live & Deployed"
+                    label="Live Live & Deployed"
                     variant="success"
                     dot
                   />
@@ -652,7 +652,7 @@ export default function PortfolioScreen() {
                 activeOpacity={0.85}
               >
                 <LinearGradient
-                  colors={[COLORS.indigo, "#6366F1"]}
+                  colors={[COLORS.indigo, "#20B978"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.openPortfolioBtnInner}
@@ -676,7 +676,7 @@ export default function PortfolioScreen() {
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* ── ZIP download - TECH users only ───────────────────────── */}
+              {/* -- ZIP download - TECH users only ------------------------- */}
               {zipUrl && !isDesignUser && (
                 <TouchableOpacity
                   onPress={handleDownloadZip}
@@ -726,7 +726,7 @@ export default function PortfolioScreen() {
                   </View>
                 )}
 
-              {/* ── Google Drive link - DESIGN users only ────────────────── */}
+              {/* -- Google Drive link - DESIGN users only ------------------ */}
               {isDesignUser && (
                 <View style={styles.driveLinkSection}>
                   <View
@@ -736,9 +736,9 @@ export default function PortfolioScreen() {
                       gap: 8,
                       marginBottom: 10,
                     }}
-                  >
-                    <View style={styles.driveIcon}>
-                      <Text style={{ fontSize: 15 }}>📁</Text>
+                    >
+                      <View style={styles.driveIcon}>
+                      <Text style={{ fontSize: 11 }}>Drive</Text>
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text
@@ -809,12 +809,12 @@ export default function PortfolioScreen() {
                         style={{ textDecorationLine: "underline" }}
                         numberOfLines={1}
                       >
-                        ✓ Saved:{" "}
+                        Done Saved:{" "}
                         {(profile as any).design_portfolio_drive_url.substring(
                           0,
                           48,
                         )}
-                        …
+                        ...
                       </Text>
                     </TouchableOpacity>
                   ) : null}
@@ -839,7 +839,7 @@ export default function PortfolioScreen() {
             </GlassCard>
           )}
 
-          {/* ── ZIP-only card (edge case - tech only) ────────────────────── */}
+          {/* -- ZIP-only card (edge case - tech only) ---------------------- */}
           {zipUrl &&
             !profile?.portfolio_url &&
             !generating &&
@@ -854,7 +854,7 @@ export default function PortfolioScreen() {
                   }}
                 >
                   <LinearGradient
-                    colors={["rgba(6,182,212,0.2)", "rgba(6,182,212,0.05)"]}
+                    colors={["rgba(21,154,99,0.2)", "rgba(21,154,99,0.05)"]}
                     style={styles.zipIconGrad}
                   >
                     <Folder size={20} color={COLORS.cyan} weight="fill" />
@@ -893,7 +893,7 @@ export default function PortfolioScreen() {
               </GlassCard>
             )}
 
-          {/* ── Generate card ────────────────────────────────────────────── */}
+          {/* -- Generate card ---------------------------------------------- */}
           {!generating && (
             <GlassCard style={{ marginBottom: 20 }} padding={20}>
               <View
@@ -966,7 +966,7 @@ export default function PortfolioScreen() {
             </GlassCard>
           )}
 
-          {/* ── GitHub / Source status card ──────────────────────────────── */}
+          {/* -- GitHub / Source status card -------------------------------- */}
           {isTechFamily ? (
             profile?.github_username ? (
               <GlassCard padding={14} style={{ marginBottom: 20 }}>
@@ -1030,7 +1030,7 @@ export default function PortfolioScreen() {
             </GlassCard>
           )}
 
-          {/* ── Deployment history ───────────────────────────────────────── */}
+          {/* -- Deployment history ----------------------------------------- */}
           {deployments.length > 0 && (
             <>
               <Text variant="h3" style={{ marginBottom: 12 }}>
@@ -1169,9 +1169,9 @@ const styles = StyleSheet.create({
   urlChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(6,182,212,0.08)",
+    backgroundColor: "rgba(21,154,99,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.25)",
+    borderColor: "rgba(21,154,99,0.25)",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 9,
@@ -1192,8 +1192,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.35)",
-    backgroundColor: "rgba(6,182,212,0.07)",
+    borderColor: "rgba(21,154,99,0.35)",
+    backgroundColor: "rgba(21,154,99,0.07)",
     marginBottom: 10,
   },
   zipPendingRow: {
@@ -1220,14 +1220,14 @@ const styles = StyleSheet.create({
     padding: 13,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.25)",
-    backgroundColor: "rgba(6,182,212,0.05)",
+    borderColor: "rgba(21,154,99,0.25)",
+    backgroundColor: "rgba(21,154,99,0.05)",
   },
   driveIcon: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: "rgba(6,182,212,0.1)",
+    backgroundColor: "rgba(21,154,99,0.08)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1281,9 +1281,9 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 8,
-    backgroundColor: "rgba(79,70,229,0.12)",
+    backgroundColor: "rgba(21,154,99,0.12)",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.3)",
+    borderColor: "rgba(21,154,99,0.12)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1291,9 +1291,9 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 8,
-    backgroundColor: "rgba(6,182,212,0.1)",
+    backgroundColor: "rgba(21,154,99,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.3)",
+    borderColor: "rgba(21,154,99,0.3)",
     justifyContent: "center",
     alignItems: "center",
   },

@@ -12,16 +12,16 @@ import { Rocket, CheckCircle } from "phosphor-react-native";
 const FEATURES = [
   "Portfolio generation with live Vercel deployment",
   "Daily job digest from 4 major platforms",
-  "AI CV builder — 4 country formats",
+  "AI CV builder , 4 country formats",
   "LinkedIn DM drafts for every job",
   "24/7 AI career assistant",
 ];
 
 export default function TrialActivatedScreen() {
   const { profile } = useAuthStore();
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const itemAnims = useRef(FEATURES.map(() => new Animated.Value(0))).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const itemAnims = useRef(FEATURES.map(() => new Animated.Value(1))).current;
 
   useEffect(() => {
     Animated.sequence([
@@ -52,7 +52,7 @@ export default function TrialActivatedScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.2)", "rgba(6,182,212,0.1)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.08)", "transparent"]}
         locations={[0, 0.4, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -88,7 +88,7 @@ export default function TrialActivatedScreen() {
               Trial Activated
             </Text>
             <Text variant="display" align="center" style={{ marginBottom: 8 }}>
-              Your Career Is{"\n"}Launching 🚀
+              Your Career Is{"\n"}Launching 
             </Text>
             <Text
               variant="bodyLarge"
@@ -102,7 +102,7 @@ export default function TrialActivatedScreen() {
               <Text variant="body" color={COLORS.gold} weight="semibold">
                 7 days of full access
               </Text>{" "}
-              — completely free. No credit card needed.
+              , completely free. No credit card needed.
             </Text>
           </Animated.View>
 

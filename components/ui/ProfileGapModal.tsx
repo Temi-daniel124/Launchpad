@@ -175,7 +175,7 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
       >
         <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
           <LinearGradient
-            colors={["rgba(79,70,229,0.15)", "transparent"]}
+            colors={["rgba(21,154,99,0.12)", "transparent"]}
             style={StyleSheet.absoluteFill}
           />
           <ScrollView
@@ -215,7 +215,7 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
     >
       <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
         <LinearGradient
-          colors={["rgba(79,70,229,0.15)", "transparent"]}
+          colors={["rgba(21,154,99,0.12)", "transparent"]}
           style={StyleSheet.absoluteFill}
         />
         <ScrollView
@@ -463,9 +463,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: "rgba(79,70,229,0.15)",
+    backgroundColor: "rgba(21,154,99,0.12)",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.3)",
+    borderColor: "rgba(21,154,99,0.12)",
     justifyContent: "center",
     alignItems: "center",
   },

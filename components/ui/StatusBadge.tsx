@@ -33,9 +33,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       border: "rgba(245,158,11,0.3)",
     },
     info: {
-      bg: "rgba(79,70,229,0.15)",
+      bg: "rgba(21,154,99,0.12)",
       color: COLORS.indigoLight,
-      border: "rgba(79,70,229,0.3)",
+      border: "rgba(21,154,99,0.12)",
     },
     gold: {
       bg: "rgba(245,158,11,0.15)",

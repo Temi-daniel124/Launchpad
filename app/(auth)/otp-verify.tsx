@@ -163,7 +163,7 @@ export default function OTPVerifyScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.1)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -180,7 +180,7 @@ export default function OTPVerifyScreen() {
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           <View style={styles.iconContainer}>
             <LinearGradient
-              colors={["rgba(79,70,229,0.2)", "rgba(79,70,229,0.05)"]}
+              colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.12)"]}
               style={styles.iconGradient}
             >
               <EnvelopeSimple
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.2)",
+    borderColor: "rgba(21,154,99,0.12)",
   },
   otpRow: {
     flexDirection: "row",

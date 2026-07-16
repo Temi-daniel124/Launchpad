@@ -64,7 +64,7 @@ export default function Step5Screen() {
       setVerified(true);
     } catch {
       showToast(
-        "GitHub username not found. Check the exact spelling — it is case-sensitive.",
+        "GitHub username not found. Check the exact spelling , it is case-sensitive.",
         "error",
       );
       setGithubProfile(null);
@@ -87,7 +87,7 @@ export default function Step5Screen() {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -112,13 +112,13 @@ export default function Step5Screen() {
             style={{ marginBottom: 24 }}
           >
             Link your GitHub so we can source your real projects for your
-            portfolio. Enter your exact username — it is case-sensitive.
+            portfolio. Enter your exact username , it is case-sensitive.
           </Text>
 
           {/* Info box explaining how GitHub is used */}
           <GlassCard
             padding={14}
-            style={{ marginBottom: 24, borderColor: "rgba(79,70,229,0.25)" }}
+            style={{ marginBottom: 24, borderColor: "rgba(21,154,99,0.12)" }}
           >
             <View
               style={{
@@ -162,7 +162,7 @@ export default function Step5Screen() {
                     GitHub Connected
                   </Text>
                   <Text variant="caption" color={COLORS.emerald}>
-                    @{githubProfile.login} · {githubProfile.public_repos ?? 0}{" "}
+                    @{githubProfile.login} - {githubProfile.public_repos ?? 0}{" "}
                     public repos
                   </Text>
                 </View>
@@ -203,7 +203,7 @@ export default function Step5Screen() {
                   paddingHorizontal: 2,
                 }}
               >
-                Find your username at github.com/YOUR_USERNAME — it is
+                Find your username at github.com/YOUR_USERNAME , it is
                 case-sensitive. Example: if your profile is at
                 github.com/johndoe, enter johndoe
               </Text>

@@ -25,6 +25,7 @@ import { GlassCard } from "../../../components/ui/GlassCard";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
 import { GenerationFeedbackPrompt } from "../../../components/ui/GenerationFeedbackPrompt";
+import { ProgressState } from "../../../components/ui/ProgressState";
 import { COLORS } from "../../../constants/theme";
 import {
   FileText,
@@ -47,15 +48,15 @@ import {
   Trash,
 } from "phosphor-react-native";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // CV FORMAT DEFINITIONS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const CV_FORMATS = [
   {
     key: "uk",
     title: "UK CV",
     subtitle: "United Kingdom",
-    description: "2 pages max • No photo • Formal British English",
+    description: "2 pages max - No photo - Formal British English",
     color: "#1E3A5F",
     accentColor: "#C9A84C",
     tag: "ATS-Optimised",
@@ -65,7 +66,7 @@ const CV_FORMATS = [
     key: "usa",
     title: "US Resume",
     subtitle: "USA & Canada",
-    description: "1 page • Quantified achievements • Action verbs",
+    description: "1 page - Quantified achievements - Action verbs",
     color: "#B22234",
     accentColor: "#3C3B6E",
     tag: "ATS-Friendly",
@@ -76,7 +77,7 @@ const CV_FORMATS = [
     key: "european",
     title: "Europass CV",
     subtitle: "European Union",
-    description: "Standardised • Language matrix • CEFR scale",
+    description: "Standardised - Language matrix - CEFR scale",
     color: "#003399",
     accentColor: "#FFCC00",
     tag: "EU Standard",
@@ -87,7 +88,7 @@ const CV_FORMATS = [
     key: "international",
     title: "International CV",
     subtitle: "UAE, Australia & More",
-    description: "2–4 pages • Comprehensive • Global format",
+    description: "2 to 4 pages - Comprehensive - Global format",
     color: "#1A6B3C",
     accentColor: "#E67E22",
     tag: "Global Format",
@@ -139,10 +140,10 @@ function normaliseCVStyle(style: string): string {
   return style;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // PROGRESS STEPS - one set per mode (FIX: removed single PROGRESS_STEPS const
 // that caused "Cannot find name 'PROGRESS_STEPS'" errors)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const PROGRESS_STEPS_GENERATE = [
   "Analysing your profile",
   "Writing CV content with AI",
@@ -188,9 +189,9 @@ function getProgressSteps(mode: string | null): string[] {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // FORMAT BADGE
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function FormatBadge({ format }: { format: (typeof CV_FORMATS)[0] }) {
   return (
     <View
@@ -212,9 +213,9 @@ function FormatBadge({ format }: { format: (typeof CV_FORMATS)[0] }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SECTION DIVIDER
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function SectionDivider({ label }: { label: string }) {
   return (
     <View style={styles.dividerRow}>
@@ -236,9 +237,9 @@ function SectionDivider({ label }: { label: string }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // LOCAL HTML BUILDERS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function esc(s: any): string {
   if (s == null) return "";
   return String(s)
@@ -269,7 +270,7 @@ function renderExpSection(exp: any[]): string {
       <div class="exp-header">
         <div class="exp-left">
           <span class="exp-role">${esc(role)}</span>
-          <span class="exp-sep"> · </span>
+          <span class="exp-sep"> - </span>
           <span class="exp-co">${esc(company)}${location ? ", " + esc(location) : ""}</span>
         </div>
         <span class="exp-date">${esc(dates)}</span>
@@ -289,7 +290,7 @@ function renderEduSection(edu: any[]): string {
       const year = e.graduation_year || e.year || "";
       const grade = e.grade || "";
       return `<div class="edu-item">
-      <strong>${esc(degree)}</strong> · ${esc(institution)}${year ? " · " + esc(year) : ""}${grade ? " · " + esc(grade) : ""}
+      <strong>${esc(degree)}</strong> - ${esc(institution)}${year ? " - " + esc(year) : ""}${grade ? " - " + esc(grade) : ""}
     </div>`;
     })
     .join("");
@@ -341,16 +342,16 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;padding:44px 5
   <div class="name">${esc(name)}</div>
   <div class="title">${esc(title)}</div>
   <div class="contact-row">
-    ${email ? `<span>✉ ${esc(email)}</span>` : ""}
-    ${phone ? `<span>✆ ${esc(phone)}</span>` : ""}
-    ${location ? `<span>⊙ ${esc(location)}</span>` : ""}
+    ${email ? `<span>Email ${esc(email)}</span>` : ""}
+    ${phone ? `<span>Phone ${esc(phone)}</span>` : ""}
+    ${location ? `<span>Location ${esc(location)}</span>` : ""}
   </div>
   ${linkedin ? `<div class="links-row"><a href="${esc(linkedin)}">${esc(linkedin.replace("https://", ""))}</a></div>` : ""}
   ${summary ? `<div class="section-title">Personal Statement</div><div class="personal-stmt">${esc(summary)}</div>` : ""}
   ${d.experience?.length ? `<div class="section-title">Work Experience</div>${renderExpSection(d.experience)}` : ""}
   ${d.education?.length ? `<div class="section-title">Education</div>${renderEduSection(d.education)}` : ""}
   ${allSkills.length ? `<div class="section-title">Key Skills</div><div class="skills-grid">${allSkills.map((s: string) => `<span class="skill-pill">${esc(s)}</span>`).join("")}</div>` : ""}
-  ${certs.length ? `<div class="section-title">Certifications</div>${certs.map((c: any) => `<div class="cert-item">${esc(c.name || c)} ${c.issuer ? "· " + esc(c.issuer) : ""} ${c.year ? "· " + esc(c.year) : ""}</div>`).join("")}` : ""}
+  ${certs.length ? `<div class="section-title">Certifications</div>${certs.map((c: any) => `<div class="cert-item">${esc(c.name || c)} ${c.issuer ? "- " + esc(c.issuer) : ""} ${c.year ? "- " + esc(c.year) : ""}</div>`).join("")}` : ""}
   <div class="refs">References available upon request</div>
 </body></html>`;
 }
@@ -399,9 +400,9 @@ body{font-family:'Roboto',sans-serif;background:#fff;color:#111;padding:30px 44p
       ? `
   <div class="section-hdr">Technical Skills</div>
   <div class="skills-grid">
-    ${skills.technical?.length ? `<span class="skills-cat">Languages:</span><span>${skills.technical.map(esc).join(" · ")}</span>` : ""}
-    ${skills.tools?.length ? `<span class="skills-cat">Cloud & Tools:</span><span>${skills.tools.map(esc).join(" · ")}</span>` : ""}
-    ${skills.soft?.length ? `<span class="skills-cat">Core Skills:</span><span>${skills.soft.map(esc).join(" · ")}</span>` : ""}
+    ${skills.technical?.length ? `<span class="skills-cat">Languages:</span><span>${skills.technical.map(esc).join(" - ")}</span>` : ""}
+    ${skills.tools?.length ? `<span class="skills-cat">Cloud & Tools:</span><span>${skills.tools.map(esc).join(" - ")}</span>` : ""}
+    ${skills.soft?.length ? `<span class="skills-cat">Core Skills:</span><span>${skills.soft.map(esc).join(" - ")}</span>` : ""}
   </div>`
       : ""
   }
@@ -412,14 +413,14 @@ body{font-family:'Roboto',sans-serif;background:#fff;color:#111;padding:30px 44p
             const dates =
               e.dates ||
               (e.is_current
-                ? `${e.start_date} – Present`
-                : `${e.start_date} – ${e.end_date || ""}`);
-            return `<div class="exp-block"><div class="exp-top"><div><span class="exp-title">${esc(e.title || e.role)}</span> · <span class="exp-company">${esc(e.company)}</span></div><span class="exp-date">${esc(dates)}</span></div><ul class="bullets">${(e.achievements || e.bullets || []).map((b: string) => `<li>${esc(b)}</li>`).join("")}</ul></div>`;
+                ? `${e.start_date}  to  Present`
+                : `${e.start_date}  to  ${e.end_date || ""}`);
+            return `<div class="exp-block"><div class="exp-top"><div><span class="exp-title">${esc(e.title || e.role)}</span> - <span class="exp-company">${esc(e.company)}</span></div><span class="exp-date">${esc(dates)}</span></div><ul class="bullets">${(e.achievements || e.bullets || []).map((b: string) => `<li>${esc(b)}</li>`).join("")}</ul></div>`;
           })
           .join("")}`
       : ""
   }
-  ${d.education?.length ? `<div class="section-hdr">Education</div>${d.education.map((e: any) => `<div class="edu-row"><span class="edu-left">${esc(e.degree)} · ${esc(e.institution)}</span><span class="edu-right">${esc(e.graduation_year || e.year || "")}${e.grade ? " · " + esc(e.grade) : ""}</span></div>`).join("")}` : ""}
+  ${d.education?.length ? `<div class="section-hdr">Education</div>${d.education.map((e: any) => `<div class="edu-row"><span class="edu-left">${esc(e.degree)} - ${esc(e.institution)}</span><span class="edu-right">${esc(e.graduation_year || e.year || "")}${e.grade ? " - " + esc(e.grade) : ""}</span></div>`).join("")}` : ""}
   ${certs.length ? `<div class="section-hdr">Certifications</div>${certs.map((c: any) => `<div style="margin-bottom:4px;font-size:10.5pt">${esc(c.name || c)} - ${esc(c.issuer || "")}${c.year ? ", " + esc(c.year) : ""}</div>`).join("")}` : ""}
 </body></html>`;
 }
@@ -467,12 +468,12 @@ table.cv-table tr{border-bottom:1px solid #eaeefc}
 </style></head><body>
   <div class="eu-header">
     <div><div class="eu-name">${esc(name)}</div><div class="eu-title">${esc(title)}</div></div>
-    <div class="eu-stars">★★★★★★★★★★★★</div>
+    <div class="eu-stars">************</div>
   </div>
   <div class="eu-contact">
-    ${email ? `<span>✉ ${esc(email)}</span>` : ""}
-    ${phone ? `<span>✆ ${esc(phone)}</span>` : ""}
-    ${location ? `<span>⊙ ${esc(location)}</span>` : ""}
+    ${email ? `<span>Email ${esc(email)}</span>` : ""}
+    ${phone ? `<span>Phone ${esc(phone)}</span>` : ""}
+    ${location ? `<span>Location ${esc(location)}</span>` : ""}
     ${linkedin ? `<a href="${esc(linkedin)}">${esc(linkedin.replace("https://", ""))}</a>` : ""}
   </div>
   <div class="body-wrap">
@@ -485,17 +486,17 @@ table.cv-table tr{border-bottom:1px solid #eaeefc}
               const dates =
                 e.dates ||
                 (e.is_current
-                  ? `${e.start_date} – Present`
-                  : `${e.start_date} – ${e.end_date || ""}`);
+                  ? `${e.start_date}  to  Present`
+                  : `${e.start_date}  to  ${e.end_date || ""}`);
               const bullets = (e.achievements || e.bullets || [])
                 .map((b: string) => `<li>${esc(b)}</li>`)
                 .join("");
-              return `<tr><td class="dt-col">${esc(dates)}</td><td class="content-col"><strong style="color:#003399">${esc(e.title || e.role)}</strong> · ${esc(e.company)}${e.location ? ", " + esc(e.location) : ""}<ul style="margin-top:6px">${bullets}</ul></td></tr>`;
+              return `<tr><td class="dt-col">${esc(dates)}</td><td class="content-col"><strong style="color:#003399">${esc(e.title || e.role)}</strong> - ${esc(e.company)}${e.location ? ", " + esc(e.location) : ""}<ul style="margin-top:6px">${bullets}</ul></td></tr>`;
             })
             .join("")}</table>`
         : ""
     }
-    ${d.education?.length ? `<div class="section-label">Education & Training</div><table class="cv-table">${d.education.map((e: any) => `<tr><td class="dt-col">${esc(e.graduation_year || e.year || "")}</td><td class="content-col"><strong>${esc(e.degree)}</strong> · ${esc(e.institution)}${e.grade ? " · " + esc(e.grade) : ""}</td></tr>`).join("")}</table>` : ""}
+    ${d.education?.length ? `<div class="section-label">Education & Training</div><table class="cv-table">${d.education.map((e: any) => `<tr><td class="dt-col">${esc(e.graduation_year || e.year || "")}</td><td class="content-col"><strong>${esc(e.degree)}</strong> - ${esc(e.institution)}${e.grade ? " - " + esc(e.grade) : ""}</td></tr>`).join("")}</table>` : ""}
     ${
       langs.length
         ? `<div class="section-label">Language Skills</div><table class="cv-table">${langs
@@ -509,7 +510,7 @@ table.cv-table tr{border-bottom:1px solid #eaeefc}
             .join("")}</table>`
         : ""
     }
-    ${skills.technical?.length || skills.tools?.length ? `<div class="section-label">Digital & Technical Skills</div><div style="padding:10px 0;font-size:10.5pt">${[...(skills.technical || []), ...(skills.tools || [])].map(esc).join(" · ")}</div>` : ""}
+    ${skills.technical?.length || skills.tools?.length ? `<div class="section-label">Digital & Technical Skills</div><div style="padding:10px 0;font-size:10.5pt">${[...(skills.technical || []), ...(skills.tools || [])].map(esc).join(" - ")}</div>` : ""}
     ${certs.length ? `<div class="section-label">Certifications</div><table class="cv-table">${certs.map((c: any) => `<tr><td class="dt-col">${esc(c.year || "")}</td><td class="content-col">${esc(c.name || c)} - ${esc(c.issuer || "")}</td></tr>`).join("")}</table>` : ""}
   </div>
   <div class="declaration">${esc(d.declaration || "I hereby declare that the above information is true and correct to the best of my knowledge.")}</div>
@@ -566,8 +567,8 @@ body{font-family:'Source Sans Pro',sans-serif;background:#fff;color:#1a1a1a;font
     <div class="intl-name">${esc(name)}</div>
     <div class="intl-title">${esc(title)}</div>
     <div class="intl-contact">
-      ${email ? `<span>✉ ${esc(email)}</span>` : ""}
-      ${phone ? `<span>✆ ${esc(phone)}</span>` : ""}
+      ${email ? `<span>Email ${esc(email)}</span>` : ""}
+      ${phone ? `<span>Phone ${esc(phone)}</span>` : ""}
       ${location ? `<span>${esc(location)}</span>` : ""}
       ${linkedin ? `<a href="${esc(linkedin)}">LinkedIn</a>` : ""}
     </div>
@@ -592,7 +593,7 @@ body{font-family:'Source Sans Pro',sans-serif;background:#fff;color:#1a1a1a;font
             .join("")}`
         : ""
     }
-    ${d.education?.length ? `<div class="section-hdr">Academic Qualifications</div>${d.education.map((e: any) => `<div class="edu-item"><div class="edu-deg">${esc(e.degree)}${e.grade ? " · " + esc(e.grade) : ""}</div><div class="edu-inst">${esc(e.institution)}${e.graduation_year || e.year ? " · " + esc(e.graduation_year || e.year) : ""}</div></div>`).join("")}` : ""}
+    ${d.education?.length ? `<div class="section-hdr">Academic Qualifications</div>${d.education.map((e: any) => `<div class="edu-item"><div class="edu-deg">${esc(e.degree)}${e.grade ? " - " + esc(e.grade) : ""}</div><div class="edu-inst">${esc(e.institution)}${e.graduation_year || e.year ? " - " + esc(e.graduation_year || e.year) : ""}</div></div>`).join("")}` : ""}
     ${langs.length ? `<div class="section-hdr">Language Proficiency</div><table class="lang-table"><tr><th>Language</th><th>Proficiency</th></tr>${langs.map((l: any) => `<tr><td>${esc(l.language)}</td><td>${esc(l.level || "")}${l.cefr ? " (" + esc(l.cefr) + ")" : ""}</td></tr>`).join("")}</table>` : ""}
     ${certs.length ? `<div class="section-hdr">Certifications & Professional Development</div>${certs.map((c: any) => `<div style="margin-bottom:8px;font-size:11pt"><strong>${esc(c.name || c)}</strong>${c.issuer ? " - " + esc(c.issuer) : ""}${c.year ? ", " + esc(c.year) : ""}</div>`).join("")}` : ""}
     <div class="section-hdr">Professional References</div>
@@ -618,9 +619,9 @@ function buildLocalHTML(cv: any, profile: any): string {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MAIN SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 export default function CVScreen() {
   const { user, profile } = useAuthStore();
   const { showToast } = useUIStore();
@@ -737,7 +738,7 @@ export default function CVScreen() {
     }, 6000);
   };
 
-  // ── generateCV - FIXED ──────────────────────────────────────────────────────
+  // -- generateCV - FIXED ------------------------------------------------------
   // BUG FIX: old code had `importMode !== "extract"` which caused extract mode
   // to always send mode:"generate". Now each mode is handled explicitly.
   const generateCV = async () => {
@@ -803,7 +804,7 @@ export default function CVScreen() {
 
       // All good
       if (activeMode === "extract") {
-        showToast("Profile updated from your CV! ✓", "success");
+        showToast("Profile updated from your CV! Done", "success");
         clearUpload();
         const { fetchProfile } = useAuthStore.getState();
         await fetchProfile(user.id);
@@ -897,7 +898,7 @@ export default function CVScreen() {
     return CV_FORMATS.find((f) => f.key === norm)?.title || key;
   };
 
-  // ── CV VIEWER ──────────────────────────────────────────────────────────────
+  // -- CV VIEWER --------------------------------------------------------------
   if (viewingCV) {
     const normStyle = normaliseCVStyle(viewingCV.cv_style);
     const format = CV_FORMATS.find((f) => f.key === normStyle);
@@ -948,29 +949,29 @@ export default function CVScreen() {
           showsVerticalScrollIndicator
           startInLoadingState
           renderLoading={() => (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <ActivityIndicator color={COLORS.indigo} size="large" />
-            </View>
+            <ProgressState
+              title="Opening your CV preview"
+              steps={[
+                "Loading your saved CV",
+                "Preparing the preview layout",
+                "Checking the document is ready",
+              ]}
+              activeStep={1}
+            />
           )}
         />
       </View>
     );
   }
 
-  // ── SHARE SHEET ────────────────────────────────────────────────────────────
+  // -- SHARE SHEET ------------------------------------------------------------
   if (shareOptionCV) {
     const normStyle = normaliseCVStyle(shareOptionCV.cv_style);
     const format = CV_FORMATS.find((f) => f.key === normStyle);
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
         <LinearGradient
-          colors={["rgba(79,70,229,0.08)", "transparent"]}
+          colors={["rgba(21,154,99,0.12)", "transparent"]}
           style={StyleSheet.absoluteFill}
         />
         <Toast />
@@ -996,7 +997,7 @@ export default function CVScreen() {
               <View
                 style={[
                   styles.shareIcon,
-                  { backgroundColor: "rgba(79,70,229,0.15)" },
+                  { backgroundColor: "rgba(21,154,99,0.12)" },
                 ]}
               >
                 <EnvelopeSimple
@@ -1010,7 +1011,7 @@ export default function CVScreen() {
                   Send to Email
                 </Text>
                 <Text variant="caption" color={COLORS.slate}>
-                  {sendingEmail ? "Sending…" : "Get a download link via email"}
+                  {sendingEmail ? "Sending..." : "Get a download link via email"}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -1082,11 +1083,11 @@ export default function CVScreen() {
     );
   }
 
-  // ── MAIN LIST ──────────────────────────────────────────────────────────────
+  // -- MAIN LIST --------------------------------------------------------------
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(79,70,229,0.08)", "transparent"]}
+        colors={["rgba(21,154,99,0.12)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -1152,7 +1153,7 @@ export default function CVScreen() {
             </TouchableOpacity>
           )}
 
-          {/* ── Generation progress ─────────────────────────────────────── */}
+          {/* -- Generation progress --------------------------------------- */}
           {generating && (
             <GlassCard style={{ marginBottom: 20 }} padding={20}>
               <Text
@@ -1161,12 +1162,12 @@ export default function CVScreen() {
                 style={{ marginBottom: 14 }}
               >
                 {importMode === "extract"
-                  ? "Extracting profile data…"
+                  ? "Extracting profile data..."
                   : importMode === "improve"
-                    ? "Improving your CV…"
+                    ? "Improving your CV..."
                     : importMode === "convert"
-                      ? "Converting your CV…"
-                      : "Generating your CV…"}
+                      ? "Converting your CV..."
+                      : "Generating your CV..."}
               </Text>
               <View style={{ gap: 10 }}>
                 {currentSteps.map((step, i) => (
@@ -1204,7 +1205,7 @@ export default function CVScreen() {
 
           {!generating && (
             <>
-              {/* ── Import section ──────────────────────────────────────── */}
+              {/* -- Import section ---------------------------------------- */}
               <GlassCard style={styles.importCard} padding={16}>
                 <View
                   style={{
@@ -1342,7 +1343,7 @@ export default function CVScreen() {
                 )}
               </GlassCard>
 
-              {/* ── Generate section ────────────────────────────────────── */}
+              {/* -- Generate section -------------------------------------- */}
               <SectionDivider label="Generate New CV" />
 
               <View style={{ gap: 10, marginBottom: 20, marginTop: 4 }}>
@@ -1511,7 +1512,7 @@ export default function CVScreen() {
             </>
           )}
 
-          {/* ── Your CVs ──────────────────────────────────────────────── */}
+          {/* -- Your CVs ------------------------------------------------ */}
           {cvs.length > 0 && (
             <>
               <SectionDivider label="Your CVs" />
@@ -1621,8 +1622,8 @@ export default function CVScreen() {
                           style={[
                             styles.actionBtn,
                             {
-                              borderColor: "rgba(79,70,229,0.4)",
-                              backgroundColor: "rgba(79,70,229,0.1)",
+                              borderColor: "rgba(21,154,99,0.12)",
+                              backgroundColor: "rgba(21,154,99,0.12)",
                             },
                           ]}
                           activeOpacity={0.8}

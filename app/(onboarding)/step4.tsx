@@ -118,7 +118,7 @@ export default function Step4Screen() {
               <Image source={{ uri: photoUri }} style={styles.photo} />
             ) : (
               <LinearGradient
-                colors={["rgba(79,70,229,0.15)", "rgba(6,182,212,0.1)"]}
+                colors={["rgba(21,154,99,0.12)", "rgba(21,154,99,0.08)"]}
                 style={styles.photoPlaceholder}
               >
                 <UserCircle size={80} color={COLORS.fog} weight="thin" />

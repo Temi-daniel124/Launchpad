@@ -21,6 +21,7 @@ import { useUIStore } from "../../../stores/uiStore";
 import { Text } from "../../../components/ui/Text";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { Toast } from "../../../components/ui/Toast";
+import { ProgressState } from "../../../components/ui/ProgressState";
 import { COLORS } from "../../../constants/theme";
 import {
   PaperPlaneRight,
@@ -113,7 +114,7 @@ export default function ChatScreen() {
     } catch {}
   };
 
-  // ── BUG #10 FIX: handleSend accepts optional override text so suggestion chips auto-send
+  // -- BUG #10 FIX: handleSend accepts optional override text so suggestion chips auto-send
   const handleSend = useCallback(
     async (overrideText?: string) => {
       const text = (overrideText ?? input).trim();
@@ -278,7 +279,7 @@ export default function ChatScreen() {
             )}
           </View>
 
-          {/* BUG #10 FIX: Android input visibility — use "padding" on Android too,
+          {/* BUG #10 FIX: Android input visibility , use "padding" on Android too,
               with a larger keyboardVerticalOffset to ensure the input bar is always visible */}
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "padding"}
@@ -286,9 +287,15 @@ export default function ChatScreen() {
             keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 80}
           >
             {loadingHistory ? (
-              <View style={styles.loadingCenter}>
-                <ActivityIndicator color={COLORS.emerald} />
-              </View>
+              <ProgressState
+                title="Opening your chat"
+                steps={[
+                  "Reading your recent messages",
+                  "Preparing Alex's context",
+                  "Getting the chat ready",
+                ]}
+                activeStep={0}
+              />
             ) : (
               <ScrollView
                 ref={scrollRef}
@@ -386,9 +393,9 @@ export default function ChatScreen() {
               </ScrollView>
             )}
 
-            {/* TEXT INPUT BAR — always visible, always at bottom */}
+            {/* TEXT INPUT BAR , always visible, always at bottom */}
             <View style={styles.inputBarWrapper}>
-              {/* Character counter — only shown when near limit */}
+              {/* Character counter , only shown when near limit */}
               {isNearLimit && (
                 <View style={styles.charCountRow}>
                   <RNText

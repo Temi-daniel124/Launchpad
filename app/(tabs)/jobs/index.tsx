@@ -41,7 +41,7 @@ import {
   Check,
 } from "phosphor-react-native";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const SOURCE_CONFIG: Record<string, { color: string }> = {
   LinkedIn: { color: "#0A66C2" },
   RemoteOK: { color: "#00B35B" },
@@ -102,9 +102,9 @@ function buildLinkedInDM(job: any, profile: any): string {
     : msg;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Compact dropdown component
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 function FilterDropdown({
   label,
   value,
@@ -174,7 +174,7 @@ function FilterDropdown({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 export default function JobsScreen() {
   const { user, profile } = useAuthStore();
   const { showToast } = useUIStore();
@@ -305,7 +305,7 @@ export default function JobsScreen() {
     showToast("Message copied to clipboard", "success");
   };
 
-  // ── Job card ──────────────────────────────────────────────────────────────
+  // -- Job card --------------------------------------------------------------
   const renderJobCard = ({ item: job }: { item: any }) => {
     const src = SOURCE_CONFIG[job.source] || { color: COLORS.indigo };
     const isNew = job.status === "new";
@@ -422,7 +422,7 @@ export default function JobsScreen() {
     );
   };
 
-  // ── LinkedIn DM section (LinkedIn jobs only) ────────────────────────────
+  // -- LinkedIn DM section (LinkedIn jobs only) ----------------------------
   const LinkedInDMSection = ({ job }: { job: any }) => {
     const isLinkedIn = job.source === "LinkedIn";
 
@@ -625,11 +625,11 @@ export default function JobsScreen() {
     );
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // -- Render ----------------------------------------------------------------
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
       <LinearGradient
-        colors={["rgba(6,182,212,0.07)", "transparent"]}
+        colors={["rgba(21,154,99,0.07)", "transparent"]}
         style={StyleSheet.absoluteFill}
       />
       <Toast />
@@ -764,7 +764,7 @@ export default function JobsScreen() {
         {selectedJob && (
           <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
             <LinearGradient
-              colors={["rgba(79,70,229,0.08)", "transparent"]}
+              colors={["rgba(21,154,99,0.12)", "transparent"]}
               style={StyleSheet.absoluteFill}
             />
             <SafeAreaView style={{ flex: 1 }}>
@@ -875,8 +875,8 @@ export default function JobsScreen() {
                       style={[
                         styles.metaBadge,
                         {
-                          backgroundColor: "rgba(6,182,212,0.1)",
-                          borderColor: "rgba(6,182,212,0.3)",
+                          backgroundColor: "rgba(21,154,99,0.08)",
+                          borderColor: "rgba(21,154,99,0.3)",
                         },
                       ]}
                     >
@@ -969,7 +969,7 @@ export default function JobsScreen() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
@@ -1046,7 +1046,7 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.rim,
   },
   dropdownItemActive: {
-    backgroundColor: "rgba(79,70,229,0.12)",
+    backgroundColor: "rgba(21,154,99,0.12)",
   },
   dropdownItemText: {
     color: COLORS.slate,
@@ -1065,9 +1065,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 6,
-    backgroundColor: "rgba(6,182,212,0.1)",
+    backgroundColor: "rgba(21,154,99,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(6,182,212,0.3)",
+    borderColor: "rgba(21,154,99,0.3)",
   },
   manualBadge: {
     flexDirection: "row",
@@ -1123,8 +1123,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "rgba(79,70,229,0.35)",
-    backgroundColor: "rgba(79,70,229,0.08)",
+    borderColor: "rgba(21,154,99,0.12)",
+    backgroundColor: "rgba(21,154,99,0.12)",
   },
   instructionBox: {
     flexDirection: "row",

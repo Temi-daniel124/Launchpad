@@ -45,7 +45,7 @@ export const Text: React.FC<TextProps> = ({
           fontFamily: weight === "bold" ? "ClashDisplayBold" : "ClashDisplay",
           fontSize: 36,
           lineHeight: 44,
-          letterSpacing: -0.5,
+          letterSpacing: 0,
         };
       case "h1":
         return {
@@ -53,7 +53,7 @@ export const Text: React.FC<TextProps> = ({
           fontFamily: "ClashDisplay",
           fontSize: 28,
           lineHeight: 36,
-          letterSpacing: -0.3,
+          letterSpacing: 0,
         };
       case "h2":
         return {
@@ -99,7 +99,7 @@ export const Text: React.FC<TextProps> = ({
           fontFamily: "Outfit-Medium",
           fontSize: 13,
           lineHeight: 20,
-          letterSpacing: 0.2,
+          letterSpacing: 0,
         };
       case "mono":
         return {
