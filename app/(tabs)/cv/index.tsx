@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -24,6 +24,7 @@ import { Button } from "../../../components/ui/Button";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
+import { GenerationFeedbackPrompt } from "../../../components/ui/GenerationFeedbackPrompt";
 import { COLORS } from "../../../constants/theme";
 import {
   FileText,
@@ -118,6 +119,19 @@ const IMPORT_MODES = [
   },
 ];
 
+const OUTPUT_TYPES = [
+  { key: "cv", label: "CV" },
+  { key: "cover_letter", label: "Cover Letter" },
+];
+
+const CV_TONES = [
+  { key: "confident", label: "Confident" },
+  { key: "concise", label: "Concise" },
+  { key: "warm", label: "Warm" },
+  { key: "executive", label: "Executive" },
+  { key: "entry_friendly", label: "Entry-friendly" },
+];
+
 function normaliseCVStyle(style: string): string {
   if (!style) return "uk";
   if (style === "usa_canada") return "usa";
@@ -126,7 +140,7 @@ function normaliseCVStyle(style: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PROGRESS STEPS — one set per mode (FIX: removed single PROGRESS_STEPS const
+// PROGRESS STEPS - one set per mode (FIX: removed single PROGRESS_STEPS const
 // that caused "Cannot find name 'PROGRESS_STEPS'" errors)
 // ─────────────────────────────────────────────────────────────────────────────
 const PROGRESS_STEPS_GENERATE = [
@@ -245,8 +259,8 @@ function renderExpSection(exp: any[]): string {
       let dates = e.dates || "";
       if (!dates) {
         dates = e.is_current
-          ? `${e.start_date || ""} — Present`
-          : `${e.start_date || ""} — ${e.end_date || ""}`;
+          ? `${e.start_date || ""} - Present`
+          : `${e.start_date || ""} - ${e.end_date || ""}`;
       }
       const bulletHtml = bullets
         .map((b: string) => `<li>${esc(b)}</li>`)
@@ -406,7 +420,7 @@ body{font-family:'Roboto',sans-serif;background:#fff;color:#111;padding:30px 44p
       : ""
   }
   ${d.education?.length ? `<div class="section-hdr">Education</div>${d.education.map((e: any) => `<div class="edu-row"><span class="edu-left">${esc(e.degree)} · ${esc(e.institution)}</span><span class="edu-right">${esc(e.graduation_year || e.year || "")}${e.grade ? " · " + esc(e.grade) : ""}</span></div>`).join("")}` : ""}
-  ${certs.length ? `<div class="section-hdr">Certifications</div>${certs.map((c: any) => `<div style="margin-bottom:4px;font-size:10.5pt">${esc(c.name || c)} — ${esc(c.issuer || "")}${c.year ? ", " + esc(c.year) : ""}</div>`).join("")}` : ""}
+  ${certs.length ? `<div class="section-hdr">Certifications</div>${certs.map((c: any) => `<div style="margin-bottom:4px;font-size:10.5pt">${esc(c.name || c)} - ${esc(c.issuer || "")}${c.year ? ", " + esc(c.year) : ""}</div>`).join("")}` : ""}
 </body></html>`;
 }
 
@@ -496,7 +510,7 @@ table.cv-table tr{border-bottom:1px solid #eaeefc}
         : ""
     }
     ${skills.technical?.length || skills.tools?.length ? `<div class="section-label">Digital & Technical Skills</div><div style="padding:10px 0;font-size:10.5pt">${[...(skills.technical || []), ...(skills.tools || [])].map(esc).join(" · ")}</div>` : ""}
-    ${certs.length ? `<div class="section-label">Certifications</div><table class="cv-table">${certs.map((c: any) => `<tr><td class="dt-col">${esc(c.year || "")}</td><td class="content-col">${esc(c.name || c)} — ${esc(c.issuer || "")}</td></tr>`).join("")}</table>` : ""}
+    ${certs.length ? `<div class="section-label">Certifications</div><table class="cv-table">${certs.map((c: any) => `<tr><td class="dt-col">${esc(c.year || "")}</td><td class="content-col">${esc(c.name || c)} - ${esc(c.issuer || "")}</td></tr>`).join("")}</table>` : ""}
   </div>
   <div class="declaration">${esc(d.declaration || "I hereby declare that the above information is true and correct to the best of my knowledge.")}</div>
 </body></html>`;
@@ -568,8 +582,8 @@ body{font-family:'Source Sans Pro',sans-serif;background:#fff;color:#1a1a1a;font
               const dates =
                 e.dates ||
                 (e.is_current
-                  ? `${e.start_date} — Present`
-                  : `${e.start_date} — ${e.end_date || ""}`);
+                  ? `${e.start_date} - Present`
+                  : `${e.start_date} - ${e.end_date || ""}`);
               const bullets = (e.achievements || e.bullets || [])
                 .map((b: string) => `<li>${esc(b)}</li>`)
                 .join("");
@@ -580,7 +594,7 @@ body{font-family:'Source Sans Pro',sans-serif;background:#fff;color:#1a1a1a;font
     }
     ${d.education?.length ? `<div class="section-hdr">Academic Qualifications</div>${d.education.map((e: any) => `<div class="edu-item"><div class="edu-deg">${esc(e.degree)}${e.grade ? " · " + esc(e.grade) : ""}</div><div class="edu-inst">${esc(e.institution)}${e.graduation_year || e.year ? " · " + esc(e.graduation_year || e.year) : ""}</div></div>`).join("")}` : ""}
     ${langs.length ? `<div class="section-hdr">Language Proficiency</div><table class="lang-table"><tr><th>Language</th><th>Proficiency</th></tr>${langs.map((l: any) => `<tr><td>${esc(l.language)}</td><td>${esc(l.level || "")}${l.cefr ? " (" + esc(l.cefr) + ")" : ""}</td></tr>`).join("")}</table>` : ""}
-    ${certs.length ? `<div class="section-hdr">Certifications & Professional Development</div>${certs.map((c: any) => `<div style="margin-bottom:8px;font-size:11pt"><strong>${esc(c.name || c)}</strong>${c.issuer ? " — " + esc(c.issuer) : ""}${c.year ? ", " + esc(c.year) : ""}</div>`).join("")}` : ""}
+    ${certs.length ? `<div class="section-hdr">Certifications & Professional Development</div>${certs.map((c: any) => `<div style="margin-bottom:8px;font-size:11pt"><strong>${esc(c.name || c)}</strong>${c.issuer ? " - " + esc(c.issuer) : ""}${c.year ? ", " + esc(c.year) : ""}</div>`).join("")}` : ""}
     <div class="section-hdr">Professional References</div>
     <p style="font-style:italic;color:#555;font-size:11pt">${esc(typeof d.references === "string" ? d.references : "Available upon request")}</p>
   </div>
@@ -621,6 +635,10 @@ export default function CVScreen() {
   const [uploadedCVText, setUploadedCVText] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [importMode, setImportMode] = useState<string | null>(null);
+  const [outputType, setOutputType] = useState("cv");
+  const [tone, setTone] = useState("confident");
+  const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false);
+  const [lastGeneratedCvId, setLastGeneratedCvId] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -669,7 +687,7 @@ export default function CVScreen() {
         setUploadedCVText(text);
       } catch {
         setUploadedCVText(
-          `[File: ${asset.name} — CV uploaded for AI improvement]`,
+          `[File: ${asset.name} - CV uploaded for AI improvement]`,
         );
       }
       setImportMode(null);
@@ -719,7 +737,7 @@ export default function CVScreen() {
     }, 6000);
   };
 
-  // ── generateCV — FIXED ──────────────────────────────────────────────────────
+  // ── generateCV - FIXED ──────────────────────────────────────────────────────
   // BUG FIX: old code had `importMode !== "extract"` which caused extract mode
   // to always send mode:"generate". Now each mode is handled explicitly.
   const generateCV = async () => {
@@ -747,12 +765,16 @@ export default function CVScreen() {
           existing_cv_text: uploadedCVText,
           cv_style: selectedFormat ?? "uk",
           target_country: selectedFormat ?? "uk",
+          output_type: outputType,
+          tone,
         };
       } else {
         requestBody = {
           mode: "generate",
           cv_style: selectedFormat ?? "uk",
           target_country: selectedFormat ?? "uk",
+          output_type: outputType,
+          tone,
         };
       }
 
@@ -786,7 +808,14 @@ export default function CVScreen() {
         const { fetchProfile } = useAuthStore.getState();
         await fetchProfile(user.id);
       } else {
-        showToast("CV generated! Check your email.", "success");
+        setLastGeneratedCvId(data?.cv_record_id ?? null);
+        showToast(
+          outputType === "cover_letter"
+            ? "Cover letter generated. Check your email."
+            : "CV generated. Check your email.",
+          "success",
+        );
+        setShowFeedbackPrompt(true);
         clearUpload();
         setTimeout(() => loadCVs(), 1500);
       }
@@ -1061,6 +1090,14 @@ export default function CVScreen() {
         style={StyleSheet.absoluteFill}
       />
       <Toast />
+      <GenerationFeedbackPrompt
+        visible={showFeedbackPrompt}
+        userId={user?.id}
+        feature={outputType === "cover_letter" ? "cover_letter" : "cv"}
+        artifactId={lastGeneratedCvId}
+        onClose={() => setShowFeedbackPrompt(false)}
+        onSubmitted={() => showToast("Feedback saved.", "success")}
+      />
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.ScrollView
           style={{ opacity: fadeAnim, flex: 1 }}
@@ -1097,7 +1134,7 @@ export default function CVScreen() {
                   Your profile is {completeness}% complete
                 </Text>
                 <Text variant="caption" color={COLORS.slate}>
-                  Complete your profile to get a better CV — your CV will have
+                  Complete your profile to get a better CV - your CV will have
                   gaps
                 </Text>
               </View>
@@ -1392,6 +1429,58 @@ export default function CVScreen() {
                 })}
               </View>
 
+              <View style={{ marginBottom: 18 }}>
+                <Text variant="label" color={COLORS.snow} style={{ marginBottom: 10 }}>
+                  Output Type
+                </Text>
+                <View style={styles.segmentRow}>
+                  {OUTPUT_TYPES.map((item) => {
+                    const selected = outputType === item.key;
+                    return (
+                      <TouchableOpacity
+                        key={item.key}
+                        onPress={() => setOutputType(item.key)}
+                        style={[styles.segmentButton, selected && styles.segmentButtonActive]}
+                      >
+                        <Text
+                          variant="caption"
+                          color={selected ? COLORS.snow : COLORS.slate}
+                          weight="semibold"
+                        >
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={{ marginBottom: 20 }}>
+                <Text variant="label" color={COLORS.snow} style={{ marginBottom: 10 }}>
+                  Tone
+                </Text>
+                <View style={styles.segmentWrap}>
+                  {CV_TONES.map((item) => {
+                    const selected = tone === item.key;
+                    return (
+                      <TouchableOpacity
+                        key={item.key}
+                        onPress={() => setTone(item.key)}
+                        style={[styles.toneButton, selected && styles.segmentButtonActive]}
+                      >
+                        <Text
+                          variant="caption"
+                          color={selected ? COLORS.snow : COLORS.slate}
+                          weight="semibold"
+                        >
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
               <Button
                 title={(() => {
                   if (uploadedFileName && importMode) {
@@ -1405,7 +1494,9 @@ export default function CVScreen() {
                       return "Extract Data to My Profile";
                   }
                   if (selectedFormat) {
-                    return `Generate ${CV_FORMATS.find((f) => f.key === selectedFormat)?.title || "CV"}`;
+                    return outputType === "cover_letter"
+                      ? "Generate Cover Letter"
+                      : `Generate ${CV_FORMATS.find((f) => f.key === selectedFormat)?.title || "CV"}`;
                   }
                   return "Select a Format to Continue";
                 })()}
@@ -1720,6 +1811,40 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: "transparent",
+  },
+  segmentRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  segmentWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  segmentButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.rim,
+    backgroundColor: COLORS.navy,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  toneButton: {
+    minHeight: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.rim,
+    backgroundColor: COLORS.navy,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  segmentButtonActive: {
+    borderColor: COLORS.emerald,
+    backgroundColor: `${COLORS.emerald}22`,
   },
   cvCard: {
     backgroundColor: COLORS.navy,

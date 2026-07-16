@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import {
   View,
   Modal,
@@ -102,8 +102,12 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
     return fields;
   };
 
-  // Check separately if GitHub is missing for portfolio mode
-  const needsGithub = mode === "portfolio" && !profile?.github_username;
+  const isTechFamily =
+    profile?.layout_family === "tech_project_evidence" ||
+    profile?.career_group === "tech" ||
+    profile?.profession_type === "tech";
+  // Check separately if GitHub is missing for technical portfolio mode.
+  const needsGithub = mode === "portfolio" && isTechFamily && !profile?.github_username;
 
   const gaps = getGapFields().filter((f) => !f.filled);
   const filled = getGapFields().filter((f) => f.filled);
@@ -199,7 +203,7 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
             </Text>
           </View>
 
-          {/* GitHub missing notice (portfolio only) — NOT AI fillable */}
+          {/* GitHub missing notice (portfolio only) - NOT AI fillable */}
           {needsGithub && (
             <GlassCard
               style={{ marginBottom: 20, borderColor: `${COLORS.gold}44` }}
@@ -246,7 +250,7 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
             </GlassCard>
           )}
 
-          {/* Gap fields — AI can fill */}
+          {/* Gap fields - AI can fill */}
           {hasGaps && (
             <>
               <Text

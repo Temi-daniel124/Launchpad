@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useState,
   useEffect,
   useRef,
@@ -28,6 +28,7 @@ import { GlassCard } from "../../../components/ui/GlassCard";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
 import { ProfileGapModal } from "../../../components/ui/ProfileGapModal";
+import { GenerationFeedbackPrompt } from "../../../components/ui/GenerationFeedbackPrompt";
 import { COLORS } from "../../../constants/theme";
 import {
   Globe,
@@ -111,7 +112,11 @@ export default function PortfolioScreen() {
   const { profile, fetchProfile, user, updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
 
-  const isDesignUser = profile?.profession_type === "design";
+  const isTechFamily =
+    (profile as any)?.layout_family === "tech_project_evidence" ||
+    (profile as any)?.career_group === "tech" ||
+    profile?.profession_type === "tech";
+  const isDesignUser = !isTechFamily;
 
   const [generating, setGenerating] = useState(false);
   const [progressStep, setProgressStep] = useState(0);
@@ -121,8 +126,10 @@ export default function PortfolioScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showGapModal, setShowGapModal] = useState(false);
   const [zipDownloading, setZipDownloading] = useState(false);
+  const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false);
+  const [lastDeploymentId, setLastDeploymentId] = useState<string | null>(null);
 
-  // Drive link state — for design users only
+  // Drive link state - for design users only
   const [driveLinkInput, setDriveLinkInput] = useState(
     (profile as any)?.design_portfolio_drive_url ?? "",
   );
@@ -169,6 +176,7 @@ export default function PortfolioScreen() {
         },
         (payload) => {
           if (payload.new.deploy_status === "READY") {
+            setLastDeploymentId(payload.new.id ?? null);
             handleGenerationComplete();
           } else if (payload.new.deploy_status === "ERROR") {
             clearProgressInterval();
@@ -223,7 +231,8 @@ export default function PortfolioScreen() {
       setGenerating(false);
       setProgressDone(false);
       setProgressStep(0);
-      showToast("Portfolio is live! 🚀", "success");
+      showToast("Portfolio is live.", "success");
+      setShowFeedbackPrompt(true);
       scrollRef.current?.scrollTo({ y: 0, animated: true });
     }, 2000);
   }, [user]);
@@ -452,6 +461,14 @@ export default function PortfolioScreen() {
         profile={profile}
         mode="portfolio"
       />
+      <GenerationFeedbackPrompt
+        visible={showFeedbackPrompt}
+        userId={user?.id}
+        feature="portfolio"
+        artifactId={lastDeploymentId}
+        onClose={() => setShowFeedbackPrompt(false)}
+        onSubmitted={() => showToast("Feedback saved.", "success")}
+      />
 
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.ScrollView
@@ -652,7 +669,7 @@ export default function PortfolioScreen() {
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* ── ZIP download — TECH users only ───────────────────────── */}
+              {/* ── ZIP download - TECH users only ───────────────────────── */}
               {zipUrl && !isDesignUser && (
                 <TouchableOpacity
                   onPress={handleDownloadZip}
@@ -684,7 +701,7 @@ export default function PortfolioScreen() {
                 </TouchableOpacity>
               )}
 
-              {/* ZIP pending — TECH users only, within timeout window */}
+              {/* ZIP pending - TECH users only, within timeout window */}
               {!zipUrl &&
                 latestReadyDeployment &&
                 !zipPendingTooLong &&
@@ -702,7 +719,7 @@ export default function PortfolioScreen() {
                   </View>
                 )}
 
-              {/* ── Google Drive link — DESIGN users only ────────────────── */}
+              {/* ── Google Drive link - DESIGN users only ────────────────── */}
               {isDesignUser && (
                 <View style={styles.driveLinkSection}>
                   <View
@@ -815,7 +832,7 @@ export default function PortfolioScreen() {
             </GlassCard>
           )}
 
-          {/* ── ZIP-only card (edge case — tech only) ────────────────────── */}
+          {/* ── ZIP-only card (edge case - tech only) ────────────────────── */}
           {zipUrl &&
             !profile?.portfolio_url &&
             !generating &&
@@ -943,7 +960,7 @@ export default function PortfolioScreen() {
           )}
 
           {/* ── GitHub / Source status card ──────────────────────────────── */}
-          {!isDesignUser ? (
+          {isTechFamily ? (
             profile?.github_username ? (
               <GlassCard padding={14} style={{ marginBottom: 20 }}>
                 <View
