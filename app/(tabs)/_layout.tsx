@@ -1,18 +1,26 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
   Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
 } from "react-native";
+import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
 import { House, Briefcase, Globe, FileText, User } from "phosphor-react-native";
 import { Text } from "../../components/ui/Text";
-import { COLORS } from "../../constants/theme";
+import { COLORS, IS_DARK_THEME } from "../../constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const TABS = [
+type TabItem = {
+  name: string;
+  label: string;
+  Icon: typeof House;
+  badgeCount?: number;
+};
+
+const TABS: TabItem[] = [
   { name: "home/index", label: "Home", Icon: House },
   { name: "jobs/index", label: "Jobs", Icon: Briefcase },
   { name: "portfolio/index", label: "Portfolio", Icon: Globe },
@@ -20,22 +28,61 @@ const TABS = [
   { name: "profile/index", label: "Profile", Icon: User },
 ];
 
+const webBackdropStyle = Platform.select<ViewStyle>({
+  web: {
+    backdropFilter: "blur(24px)",
+  } as ViewStyle,
+  default: {},
+});
+
+const blurIntensity = Platform.OS === "android" ? 16 : 24;
+
+function withAlpha(hex: string, alpha: number) {
+  const value = hex.replace("#", "");
+  const bigint = Number.parseInt(value, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function CustomTabBar({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const glassSurface = withAlpha(COLORS.navy, IS_DARK_THEME ? 0.76 : 0.72);
+  const activeSurface = withAlpha(COLORS.indigo, IS_DARK_THEME ? 0.16 : 0.12);
+  const borderSurface = withAlpha(COLORS.rim, IS_DARK_THEME ? 0.72 : 0.82);
 
   return (
     <View
-      style={[styles.tabBarContainer, { paddingBottom: insets.bottom || 12 }]}
+      pointerEvents="box-none"
+      style={[
+        styles.tabBarWrapper,
+        { bottom: Math.max(insets.bottom, 10) },
+      ]}
     >
-      <View style={styles.topBorder} />
-      <View style={styles.tabsRow}>
+      <BlurView
+        intensity={blurIntensity}
+        tint={IS_DARK_THEME ? "dark" : "light"}
+        style={[
+          styles.tabBar,
+          webBackdropStyle,
+          {
+            backgroundColor: glassSurface,
+            borderColor: borderSurface,
+            shadowColor: COLORS.snow,
+          },
+        ]}
+      >
         {TABS.map((tab, index) => {
           const isFocused = state.index === index;
           const Icon = tab.Icon;
+          const badgeCount = tab.badgeCount ?? 0;
 
           return (
-            <TouchableOpacity
+            <Pressable
               key={tab.name}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isFocused }}
               onPress={() => {
                 const event = navigation.emit({
                   type: "tabPress",
@@ -46,36 +93,45 @@ function CustomTabBar({ state, navigation }: any) {
                   navigation.navigate(state.routes[index].name);
                 }
               }}
-              style={styles.tabItem}
-              activeOpacity={0.7}
+              style={({ pressed }) => [
+                styles.tabItem,
+                isFocused && [
+                  styles.tabItemActive,
+                  { backgroundColor: activeSurface },
+                ],
+                pressed && styles.tabItemPressed,
+              ]}
             >
-              <View
-                style={[styles.tabInner, isFocused && styles.tabInnerActive]}
+              <Icon
+                size={20}
+                color={isFocused ? COLORS.indigo : COLORS.fog}
+                weight={isFocused ? "fill" : "regular"}
+              />
+              {badgeCount && badgeCount > 0 ? (
+                <View style={styles.badge}>
+                  <Text
+                    numberOfLines={1}
+                    style={styles.badgeText}
+                  >
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </Text>
+                </View>
+              ) : null}
+              <Text
+                variant="caption"
+                numberOfLines={1}
+                color={isFocused ? COLORS.indigo : COLORS.fog}
+                style={[
+                  styles.tabLabel,
+                  isFocused && styles.tabLabelActive,
+                ]}
               >
-                <Icon
-                  size={22}
-                  color={isFocused ? COLORS.indigo : COLORS.fog}
-                  weight={isFocused ? "fill" : "regular"}
-                />
-                <Text
-                  variant="caption"
-                  color={isFocused ? COLORS.indigo : COLORS.fog}
-                  style={{
-                    marginTop: 3,
-                    fontFamily: isFocused
-                      ? "Outfit-SemiBold"
-                      : "Outfit-Regular",
-                    fontSize: 10,
-                  }}
-                >
-                  {tab.label}
-                </Text>
-                {isFocused && <View style={styles.activeDot} />}
-              </View>
-            </TouchableOpacity>
+                {tab.label}
+              </Text>
+            </Pressable>
           );
         })}
-      </View>
+      </BlurView>
     </View>
   );
 }
@@ -99,47 +155,70 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBarContainer: {
+  tabBarWrapper: {
+    alignItems: "center",
     position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    overflow: "hidden",
-    backgroundColor: COLORS.navy,
+    left: 16,
+    right: 16,
+    zIndex: 20,
   },
-  topBorder: {
-    height: 1,
-    backgroundColor: COLORS.rim,
-  },
-  tabsRow: {
+  tabBar: {
+    borderRadius: 999,
+    borderWidth: 1,
+    elevation: 8,
     flexDirection: "row",
-    paddingTop: 8,
-    paddingHorizontal: 8,
+    gap: 4,
+    maxWidth: 520,
+    minHeight: 64,
+    overflow: "hidden",
+    padding: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    width: "100%",
   },
   tabItem: {
+    alignItems: "center",
+    borderRadius: 999,
     flex: 1,
-    alignItems: "center",
-  },
-  tabInner: {
-    alignItems: "center",
+    gap: 3,
     justifyContent: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    minWidth: 56,
+    minHeight: 52,
+    minWidth: 48,
+    paddingHorizontal: 6,
     position: "relative",
   },
-  tabInnerActive: {
-    backgroundColor: COLORS.elevated,
-    borderColor: COLORS.rim,
-    borderWidth: 1,
+  tabItemActive: {
+    borderRadius: 999,
   },
-  activeDot: {
+  tabItemPressed: {
+    opacity: 0.72,
+  },
+  tabLabel: {
+    fontFamily: "Outfit-Regular",
+    fontSize: 10,
+    letterSpacing: 0,
+  },
+  tabLabelActive: {
+    fontFamily: "Outfit-SemiBold",
+  },
+  badge: {
+    alignItems: "center",
+    backgroundColor: COLORS.rose,
+    borderRadius: 999,
+    height: 18,
+    justifyContent: "center",
+    minWidth: 18,
+    paddingHorizontal: 5,
     position: "absolute",
-    bottom: -2,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.indigo,
+    right: 6,
+    top: 4,
+  },
+  badgeText: {
+    color: COLORS.white,
+    fontFamily: "Outfit-SemiBold",
+    fontSize: 10,
+    letterSpacing: 0,
+    lineHeight: 12,
   },
 });
