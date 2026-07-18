@@ -67,6 +67,7 @@ export type Database = {
           subscription_plan: string | null;
           subscription_expires_at: string | null;
           theme_preference: string | null;
+          theme_preference_set_at: string | null;
           currency: string | null;
           data_consent_given: boolean | null;
           profile_photo_url: string | null;

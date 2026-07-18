@@ -18,7 +18,8 @@ import {
   spacing,
 } from "../constants/theme";
 import {
-  isThemePreference,
+  isMissingThemePreferenceSetAtError,
+  resolveRemoteThemePreference,
   resolveStoredThemePreference,
   resolveTheme,
   Theme,
@@ -80,6 +81,23 @@ async function persistLocalPreference(preference: ThemePreference) {
 }
 
 async function readRemotePreference(userId: string) {
+  const withExplicitMetadata = await supabase
+    .from("profiles")
+    .select("theme_preference, theme_preference_set_at")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!withExplicitMetadata.error) {
+    return resolveRemoteThemePreference(
+      withExplicitMetadata.data?.theme_preference,
+      withExplicitMetadata.data?.theme_preference_set_at,
+    );
+  }
+
+  if (!isMissingThemePreferenceSetAtError(withExplicitMetadata.error)) {
+    throw withExplicitMetadata.error;
+  }
+
   const { data, error } = await supabase
     .from("profiles")
     .select("theme_preference")
@@ -88,20 +106,33 @@ async function readRemotePreference(userId: string) {
 
   if (error) throw error;
 
-  return isThemePreference(data?.theme_preference)
-    ? data.theme_preference
-    : null;
+  return resolveRemoteThemePreference(data?.theme_preference, null);
 }
 
 async function writeRemotePreference(
   userId: string,
   preference: ThemePreference,
 ) {
+  const updatedAt = new Date().toISOString();
+  const withExplicitMetadata = await supabase
+    .from("profiles")
+    .update({
+      theme_preference: preference,
+      theme_preference_set_at: updatedAt,
+      updated_at: updatedAt,
+    })
+    .eq("id", userId);
+
+  if (!withExplicitMetadata.error) return;
+  if (!isMissingThemePreferenceSetAtError(withExplicitMetadata.error)) {
+    throw withExplicitMetadata.error;
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
       theme_preference: preference,
-      updated_at: new Date().toISOString(),
+      updated_at: updatedAt,
     })
     .eq("id", userId);
 

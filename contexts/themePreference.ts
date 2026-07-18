@@ -13,6 +13,33 @@ export function resolveStoredThemePreference(value: string | null): ThemePrefere
   return isThemePreference(value) ? value : "light";
 }
 
+export function resolveRemoteThemePreference(
+  preference: unknown,
+  explicitSetAt: unknown,
+): ThemePreference | null {
+  if (!isThemePreference(preference)) return null;
+  if (typeof explicitSetAt !== "string" || explicitSetAt.trim().length === 0) {
+    return null;
+  }
+
+  return preference;
+}
+
+export function isMissingThemePreferenceSetAtError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+
+  const maybeError = error as { code?: unknown; message?: unknown };
+  const code = typeof maybeError.code === "string" ? maybeError.code : "";
+  const message =
+    typeof maybeError.message === "string" ? maybeError.message : "";
+
+  return (
+    code === "42703" ||
+    code === "PGRST204" ||
+    message.includes("theme_preference_set_at")
+  );
+}
+
 export function resolveTheme(
   preference: ThemePreference,
   systemColorScheme: ColorSchemeName,
