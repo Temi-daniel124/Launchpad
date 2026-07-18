@@ -1,6 +1,6 @@
 import React from "react";
 import { View, ViewStyle, StyleSheet } from "react-native";
-import { COLORS, RADIUS, SHADOWS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -17,6 +17,9 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   variant = "default",
   padding = 20,
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   const bgColors = {
     default: COLORS.navy,
     elevated: COLORS.elevated,
@@ -46,7 +49,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   container: {
     borderRadius: RADIUS.xl,
     borderWidth: 1,

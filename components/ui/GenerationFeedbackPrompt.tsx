@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Star } from "phosphor-react-native";
 import { supabase } from "../../lib/supabase";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { Text } from "./Text";
 import { Button } from "./Button";
 
@@ -33,6 +33,8 @@ export function GenerationFeedbackPrompt({
   onClose,
   onSubmitted,
 }: Props) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const [rating, setRating] = useState(0);
   const [liked, setLiked] = useState("");
   const [missing, setMissing] = useState("");
@@ -132,6 +134,9 @@ function FeedbackInput({
   value: string;
   onChangeText: (value: string) => void;
 }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   return (
     <View style={{ marginBottom: 14 }}>
       <Text variant="label" color={COLORS.snow} style={{ marginBottom: 8 }}>
@@ -149,7 +154,7 @@ function FeedbackInput({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   shell: {
     flex: 1,
     backgroundColor: COLORS.abyss,

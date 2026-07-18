@@ -10,7 +10,7 @@ import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
 import { House, Briefcase, Globe, FileText, User } from "phosphor-react-native";
 import { Text } from "../../components/ui/Text";
-import { COLORS, IS_DARK_THEME } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TabItem = {
@@ -47,10 +47,13 @@ function withAlpha(hex: string, alpha: number) {
 }
 
 function CustomTabBar({ state, navigation }: any) {
+  const { colors: COLORS, theme, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const insets = useSafeAreaInsets();
-  const glassSurface = withAlpha(COLORS.navy, IS_DARK_THEME ? 0.76 : 0.72);
-  const activeSurface = withAlpha(COLORS.indigo, IS_DARK_THEME ? 0.16 : 0.12);
-  const borderSurface = withAlpha(COLORS.rim, IS_DARK_THEME ? 0.72 : 0.82);
+  const isDarkTheme = theme === "dark";
+  const glassSurface = withAlpha(COLORS.navy, isDarkTheme ? 0.76 : 0.72);
+  const activeSurface = withAlpha(COLORS.indigo, isDarkTheme ? 0.16 : 0.12);
+  const borderSurface = withAlpha(COLORS.rim, isDarkTheme ? 0.72 : 0.82);
 
   return (
     <View
@@ -62,7 +65,7 @@ function CustomTabBar({ state, navigation }: any) {
     >
       <BlurView
         intensity={blurIntensity}
-        tint={IS_DARK_THEME ? "dark" : "light"}
+        tint={isDarkTheme ? "dark" : "light"}
         style={[
           styles.tabBar,
           webBackdropStyle,
@@ -137,6 +140,8 @@ function CustomTabBar({ state, navigation }: any) {
 }
 
 export default function TabsLayout() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   return (
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
@@ -154,7 +159,7 @@ export default function TabsLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   tabBarWrapper: {
     alignItems: "center",
     position: "absolute",

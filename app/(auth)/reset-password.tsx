@@ -17,7 +17,7 @@ import { Button } from "../../components/ui/Button";
 import { InputField } from "../../components/ui/InputField";
 import { Toast } from "../../components/ui/Toast";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   ArrowLeft,
   Eye,
@@ -80,6 +80,8 @@ function evaluatePassword(pw: string): PasswordStrength {
 type Step = "set_password" | "success";
 
 export default function ResetPasswordScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -473,7 +475,7 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
   backBtn: {
     width: 40,

@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 import { Text } from "./Text";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { useUIStore } from "../../stores/uiStore";
 import { CheckCircle, XCircle, Info } from "phosphor-react-native";
 
 export const Toast: React.FC = () => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { toast, hideToast } = useUIStore();
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -89,7 +91,7 @@ export const Toast: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   container: {
     position: "absolute",
     top: 60,

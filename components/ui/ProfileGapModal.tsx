@@ -12,7 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "./Text";
 import { Button } from "./Button";
 import { GlassCard } from "./GlassCard";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   CheckSquare,
   Square,
@@ -45,6 +45,8 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   profile,
   mode,
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const selectedCareer = String(profile?.career_type || profile?.job_title || "")
     .trim()
     .toLowerCase();
@@ -456,7 +458,7 @@ export const ProfileGapModal: React.FC<ProfileGapModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 24, paddingTop: 32 },
   header: { alignItems: "center", marginBottom: 32 },
   iconBox: {

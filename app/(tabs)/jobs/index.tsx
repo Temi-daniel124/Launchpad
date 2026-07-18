@@ -22,7 +22,7 @@ import { Button } from "../../../components/ui/Button";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { Toast } from "../../../components/ui/Toast";
 import { CardSkeleton } from "../../../components/ui/SkeletonLoader";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   MagnifyingGlass,
   Briefcase,
@@ -116,6 +116,8 @@ function FilterDropdown({
   options: { key: string; label: string }[];
   onSelect: (key: string) => void;
 }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const [open, setOpen] = useState(false);
   const activeOption = options.find((o) => o.key === value);
 
@@ -176,6 +178,8 @@ function FilterDropdown({
 
 // -----------------------------------------------------------------------------
 export default function JobsScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { user, profile } = useAuthStore();
   const { showToast } = useUIStore();
   const [jobs, setJobs] = useState<any[]>([]);
@@ -970,7 +974,7 @@ export default function JobsScreen() {
 }
 
 // -----------------------------------------------------------------------------
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View, ViewStyle } from "react-native";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 
 interface SkeletonProps {
   width?: number | string;
@@ -12,10 +12,12 @@ interface SkeletonProps {
 export const Skeleton: React.FC<SkeletonProps> = ({
   width = "100%",
   height = 16,
-  borderRadius = RADIUS.sm,
+  borderRadius,
   style,
 }) => {
+  const { colors: COLORS, radius: RADIUS } = useTheme();
   const opacity = useRef(new Animated.Value(0.3)).current;
+  const resolvedBorderRadius = borderRadius ?? RADIUS.sm;
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -42,7 +44,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
         {
           width: width as any,
           height,
-          borderRadius,
+          borderRadius: resolvedBorderRadius,
           backgroundColor: COLORS.rim,
           opacity,
         },
@@ -52,16 +54,20 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-export const CardSkeleton: React.FC = () => (
-  <View style={{ padding: 20, gap: 12 }}>
-    <Skeleton height={20} width="60%" />
-    <Skeleton height={14} width="90%" />
-    <Skeleton height={14} width="75%" />
-    <Skeleton
-      height={40}
-      width="40%"
-      borderRadius={RADIUS.md}
-      style={{ marginTop: 8 }}
-    />
-  </View>
-);
+export const CardSkeleton: React.FC = () => {
+  const { radius: RADIUS } = useTheme();
+
+  return (
+    <View style={{ padding: 20, gap: 12 }}>
+      <Skeleton height={20} width="60%" />
+      <Skeleton height={14} width="90%" />
+      <Skeleton height={14} width="75%" />
+      <Skeleton
+        height={40}
+        width="40%"
+        borderRadius={RADIUS.md}
+        style={{ marginTop: 8 }}
+      />
+    </View>
+  );
+};

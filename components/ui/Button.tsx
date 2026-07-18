@@ -8,7 +8,7 @@ import {
   Animated,
 } from "react-native";
 import { Text } from "./Text";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 
 interface ButtonProps {
   title: string;
@@ -35,6 +35,8 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = true,
   style,
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -124,7 +126,7 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   base: {
     borderRadius: RADIUS.md,
     justifyContent: "center",

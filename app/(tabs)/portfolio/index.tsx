@@ -29,7 +29,7 @@ import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
 import { ProfileGapModal } from "../../../components/ui/ProfileGapModal";
 import { GenerationFeedbackPrompt } from "../../../components/ui/GenerationFeedbackPrompt";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   Globe,
   Rocket,
@@ -109,6 +109,8 @@ function getDeployStatus(dep: any): {
 // MAIN SCREEN
 // -----------------------------------------------------------------------------
 export default function PortfolioScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { profile, fetchProfile, user, updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
 
@@ -1118,7 +1120,7 @@ export default function PortfolioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 16 },
   header: {
     flexDirection: "row",

@@ -22,7 +22,7 @@ import { Text } from "../../../components/ui/Text";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { Toast } from "../../../components/ui/Toast";
 import { ProgressState } from "../../../components/ui/ProgressState";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   PaperPlaneRight,
   Robot,
@@ -48,6 +48,8 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { profile, user } = useAuthStore();
   const { showToast } = useUIStore();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -446,7 +448,7 @@ export default function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",

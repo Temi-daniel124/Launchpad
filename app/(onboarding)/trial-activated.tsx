@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { useAuthStore } from "../../stores/authStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { Rocket, CheckCircle } from "phosphor-react-native";
 
 const FEATURES = [
@@ -18,6 +18,8 @@ const FEATURES = [
 ];
 
 export default function TrialActivatedScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { profile } = useAuthStore();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -149,7 +151,7 @@ export default function TrialActivatedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   rocketGradient: {
     width: 100,
     height: 100,

@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { StyleSheet, View } from "react-native";
 import { CheckCircle } from "phosphor-react-native";
-import { COLORS, RADIUS, SHADOWS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { Text } from "./Text";
 
 interface ProgressStateProps {
@@ -15,6 +15,9 @@ export const ProgressState: React.FC<ProgressStateProps> = ({
   steps,
   activeStep = 0,
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   return (
     <View style={styles.page}>
       <View style={styles.panel}>
@@ -61,7 +64,7 @@ export const ProgressState: React.FC<ProgressStateProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: COLORS.abyss,

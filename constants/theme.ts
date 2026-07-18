@@ -1,9 +1,6 @@
-import { Appearance } from "react-native";
-
 export const ACCENT_GREEN = "#159A63";
-export const IS_DARK_THEME = Appearance.getColorScheme() === "dark";
 
-const lightColors = {
+export const lightColors = {
   abyss: "#F7F9F8",
   navy: "#FFFFFF",
   elevated: "#F2F6F4",
@@ -21,7 +18,7 @@ const lightColors = {
   transparent: "transparent",
 } as const;
 
-const darkColors = {
+export const darkColors = {
   abyss: "#08110D",
   navy: "#101A15",
   elevated: "#17231D",
@@ -39,15 +36,13 @@ const darkColors = {
   transparent: "transparent",
 } as const;
 
-export const COLORS = IS_DARK_THEME ? darkColors : lightColors;
-
-export const FONTS = {
+export const fonts = {
   display: "ClashDisplay",
   body: "Outfit",
   mono: "JetBrainsMono",
 } as const;
 
-export const SPACING = {
+export const spacing = {
   xs: 4,
   sm: 8,
   md: 16,
@@ -56,35 +51,11 @@ export const SPACING = {
   xxl: 48,
 } as const;
 
-export const RADIUS = {
+export const radius = {
   sm: 6,
   md: 8,
   lg: 8,
   xl: 8,
   xxl: 8,
   full: 9999,
-} as const;
-
-export const SHADOWS = {
-  glow: {
-    shadowColor: COLORS.indigo,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  glowCyan: {
-    shadowColor: COLORS.indigo,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  card: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: IS_DARK_THEME ? 0.22 : 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
 } as const;

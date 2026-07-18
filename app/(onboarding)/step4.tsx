@@ -17,10 +17,12 @@ import { OnboardingProgress } from "../../components/ui/OnboardingProgress";
 import { Toast } from "../../components/ui/Toast";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { Camera, UserCircle, ArrowRight } from "phosphor-react-native";
 
 export default function Step4Screen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { user, updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -166,7 +168,7 @@ export default function Step4Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   photoContainer: { position: "relative", width: 160, height: 160 },
   photo: {
     width: 160,

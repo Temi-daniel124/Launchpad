@@ -14,13 +14,15 @@ import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Toast } from "../../components/ui/Toast";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { ArrowLeft, EnvelopeSimple } from "phosphor-react-native";
 import { useAuthStore } from "../../stores/authStore";
 
 const OTP_LENGTH = 6;
 
 export default function OTPVerifyScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { email, mode } = useLocalSearchParams<{
     email: string;
     mode: string;
@@ -264,7 +266,7 @@ export default function OTPVerifyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
   backBtn: {
     width: 40,

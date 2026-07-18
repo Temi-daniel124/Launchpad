@@ -1,6 +1,6 @@
 import React from "react";
 import { Text as RNText, TextStyle, StyleSheet, StyleProp } from "react-native";
-import { COLORS } from "../../constants/theme";
+import { useTheme } from "../../contexts/ThemeContext";
 
 interface TextProps {
   children: React.ReactNode;
@@ -32,6 +32,8 @@ export const Text: React.FC<TextProps> = ({
   weight,
   onPress,
 }) => {
+  const { colors: COLORS } = useTheme();
+
   const getStyle = (): TextStyle => {
     const base: TextStyle = {
       color: color || COLORS.snow,

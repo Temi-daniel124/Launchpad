@@ -20,7 +20,7 @@ import { useUIStore } from "../../../stores/uiStore";
 import { Text } from "../../../components/ui/Text";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { Toast } from "../../../components/ui/Toast";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   ArrowLeft,
   Plus,
@@ -162,7 +162,7 @@ function calcCompleteness(data: {
 function SectionHeader({
   icon: Icon,
   title,
-  color = COLORS.indigo,
+  color,
   expanded,
   onToggle,
 }: {
@@ -172,14 +172,18 @@ function SectionHeader({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+  const resolvedColor = color ?? COLORS.indigo;
+
   return (
     <TouchableOpacity
       style={styles.sectionHeader}
       onPress={onToggle}
       activeOpacity={0.8}
     >
-      <View style={[styles.sectionIcon, { backgroundColor: `${color}18` }]}>
-        <Icon size={18} color={color} weight="duotone" />
+      <View style={[styles.sectionIcon, { backgroundColor: `${resolvedColor}18` }]}>
+        <Icon size={18} color={resolvedColor} weight="duotone" />
       </View>
       <Text
         variant="label"
@@ -218,6 +222,9 @@ function Field({
   required?: boolean;
   hint?: string;
 }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   return (
     <View style={styles.field}>
       <View
@@ -266,7 +273,7 @@ function TagInput({
   tags,
   onAdd,
   onRemove,
-  color = COLORS.indigo,
+  color,
   placeholder = "Add skill...",
 }: {
   label: string;
@@ -276,6 +283,9 @@ function TagInput({
   color?: string;
   placeholder?: string;
 }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+  const resolvedColor = color ?? COLORS.indigo;
   const [input, setInput] = useState("");
   const handleAdd = () => {
     const v = input.trim();
@@ -294,13 +304,13 @@ function TagInput({
             onPress={() => onRemove(tag)}
             style={[
               styles.tag,
-              { backgroundColor: `${color}18`, borderColor: `${color}44` },
+              { backgroundColor: `${resolvedColor}18`, borderColor: `${resolvedColor}44` },
             ]}
           >
-            <Text style={{ fontSize: 12, color, fontWeight: "600" }}>
+            <Text style={{ fontSize: 12, color: resolvedColor, fontWeight: "600" }}>
               {tag}
             </Text>
-            <Text style={{ fontSize: 12, color, marginLeft: 4 }}>x</Text>
+            <Text style={{ fontSize: 12, color: resolvedColor, marginLeft: 4 }}>x</Text>
           </TouchableOpacity>
         ))}
         <View style={styles.tagInputRow}>
@@ -315,9 +325,9 @@ function TagInput({
           />
           <TouchableOpacity
             onPress={handleAdd}
-            style={[styles.tagAddBtn, { backgroundColor: `${color}22` }]}
+            style={[styles.tagAddBtn, { backgroundColor: `${resolvedColor}22` }]}
           >
-            <Plus size={14} color={color} weight="bold" />
+            <Plus size={14} color={resolvedColor} weight="bold" />
           </TouchableOpacity>
         </View>
       </View>
@@ -332,6 +342,9 @@ function CEFRPicker({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
       {CEFR_LEVELS.map((level) => (
@@ -365,6 +378,8 @@ function CEFRPicker({
 // MAIN SCREEN
 // -----------------------------------------------------------------------------
 export default function ProfileEditScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { profile, updateProfile, user } = useAuthStore();
   const { showToast } = useUIStore();
   const [saving, setSaving] = useState(false);
@@ -1971,7 +1986,7 @@ export default function ProfileEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",

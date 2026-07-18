@@ -12,12 +12,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { Rocket, Briefcase, FileText, Robot } from "phosphor-react-native";
 
 const { width, height } = Dimensions.get("window");
 
-const SLIDES = [
+const createSlides = (COLORS: ThemeColors) => [
   {
     icon: Rocket,
     iconColor: COLORS.indigo,
@@ -49,6 +49,9 @@ const SLIDES = [
 ];
 
 export default function WelcomeScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+  const slides = React.useMemo(() => createSlides(COLORS), [COLORS]);
   const scrollX = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
   const currentIndex = useRef(0);
@@ -114,7 +117,7 @@ export default function WelcomeScreen() {
             scrollEventThrottle={16}
             style={{ flex: 1 }}
           >
-            {SLIDES.map((slide, index) => {
+            {slides.map((slide, index) => {
               const Icon = slide.icon;
               return (
                 <View key={index} style={[styles.slide, { width }]}>
@@ -156,7 +159,7 @@ export default function WelcomeScreen() {
 
           {/* Dots */}
           <View style={styles.dotsRow}>
-            {SLIDES.map((_, i) => {
+            {slides.map((_, i) => {
               const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
               const dotWidth = scrollX.interpolate({
                 inputRange,
@@ -202,7 +205,7 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   logoRow: {
     flexDirection: "row",
     alignItems: "center",

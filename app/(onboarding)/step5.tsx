@@ -18,7 +18,7 @@ import { GlassCard } from "../../components/ui/GlassCard";
 import { Toast } from "../../components/ui/Toast";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   GithubLogo,
   CheckCircle,
@@ -27,6 +27,8 @@ import {
 } from "phosphor-react-native";
 
 export default function Step5Screen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { updateProfile, user } = useAuthStore();
   const { showToast } = useUIStore();
   const [githubUsername, setGithubUsername] = useState("");
@@ -257,7 +259,7 @@ export default function Step5Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 },
   iconBox: {
     width: 72,

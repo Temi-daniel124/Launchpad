@@ -9,7 +9,7 @@ import { OnboardingProgress } from "../../components/ui/OnboardingProgress";
 import { Toast } from "../../components/ui/Toast";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   Target,
   Globe,
@@ -18,7 +18,7 @@ import {
   Buildings,
 } from "phosphor-react-native";
 
-const GOALS = [
+const createGoals = (COLORS: ThemeColors) => [
   {
     key: "land_remote",
     label: "Land a remote job internationally",
@@ -52,12 +52,15 @@ const GOALS = [
 ];
 
 export default function Step2Screen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+  const goals = React.useMemo(() => createGoals(COLORS), [COLORS]);
   const { updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnims = useRef(GOALS.map(() => new Animated.Value(1))).current;
+  const scaleAnims = useRef(goals.map(() => new Animated.Value(1))).current;
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -115,7 +118,7 @@ export default function Step2Screen() {
           </Text>
 
           <View style={{ gap: 12 }}>
-            {GOALS.map((goal, index) => {
+              {goals.map((goal, index) => {
               const Icon = goal.icon;
               const selected = selectedGoals.includes(goal.key);
               return (
@@ -184,7 +187,7 @@ export default function Step2Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   goalCard: {
     flexDirection: "row",
     alignItems: "center",

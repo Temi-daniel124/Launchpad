@@ -15,7 +15,7 @@ import { OnboardingProgress } from "../../components/ui/OnboardingProgress";
 import { Toast } from "../../components/ui/Toast";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   Globe,
   Laptop,
@@ -51,6 +51,8 @@ const JOB_TYPES = [
 ];
 
 export default function Step3Screen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
@@ -235,7 +237,7 @@ export default function Step3Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 24, paddingBottom: 40 },
   chipGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {

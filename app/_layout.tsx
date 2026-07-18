@@ -8,7 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../stores/authStore";
-import { COLORS, IS_DARK_THEME } from "../constants/theme";
+import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -17,7 +17,16 @@ SplashScreen.preventAutoHideAsync();
 const SPLASH_TIMEOUT_MS = 8000;
 
 export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutContent() {
   const { setSession, fetchProfile } = useAuthStore();
+  const { colors: COLORS, theme, isReady: themeReady } = useTheme();
   const initialLoadDone = useRef(false);
   const navigating = useRef(false);
   const splashHidden = useRef(false);
@@ -53,10 +62,10 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded && themeReady) {
       hideSplashSafe();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, themeReady]);
 
   useEffect(() => {
     let mounted = true;
@@ -154,12 +163,12 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded || !themeReady) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar
-        style={IS_DARK_THEME ? "light" : "dark"}
+        style={theme === "dark" ? "light" : "dark"}
         backgroundColor={COLORS.abyss}
       />
       <Stack

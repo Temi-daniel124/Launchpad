@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text } from "./Text";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 
 interface StatusBadgeProps {
   label: string;
@@ -16,6 +16,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   dot = false,
   pulse = false,
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   const configs = {
     success: {
       bg: "rgba(16,185,129,0.15)",
@@ -59,7 +62,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   badge: {
     flexDirection: "row",
     alignItems: "center",

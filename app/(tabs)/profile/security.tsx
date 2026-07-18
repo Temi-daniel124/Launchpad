@@ -21,7 +21,7 @@ import { useUIStore } from "../../../stores/uiStore";
 import { Text } from "../../../components/ui/Text";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { Toast } from "../../../components/ui/Toast";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   ArrowLeft,
   Lock,
@@ -39,6 +39,8 @@ const BIOMETRIC_PASSWORD_KEY = "biometric_password";
 const BIOMETRIC_ENABLED_KEY = "biometric_enabled";
 
 export default function SecurityScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { user } = useAuthStore();
   const { showToast } = useUIStore();
   const [newPassword, setNewPassword] = useState("");
@@ -409,7 +411,7 @@ export default function SecurityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",

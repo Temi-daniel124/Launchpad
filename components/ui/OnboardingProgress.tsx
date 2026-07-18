@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Animated } from "react-native";
 import { router } from "expo-router";
 import { ArrowLeft } from "phosphor-react-native";
 import { Text } from "./Text";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -16,6 +16,9 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   totalSteps,
   onBack,
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -48,7 +51,7 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",

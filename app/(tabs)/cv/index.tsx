@@ -26,7 +26,7 @@ import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
 import { GenerationFeedbackPrompt } from "../../../components/ui/GenerationFeedbackPrompt";
 import { ProgressState } from "../../../components/ui/ProgressState";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   FileText,
   CheckCircle,
@@ -96,7 +96,7 @@ const CV_FORMATS = [
   },
 ];
 
-const IMPORT_MODES = [
+const createImportModes = (COLORS: ThemeColors) => [
   {
     key: "convert",
     label: "Convert Format",
@@ -217,6 +217,9 @@ function FormatBadge({ format }: { format: (typeof CV_FORMATS)[0] }) {
 // SECTION DIVIDER
 // -----------------------------------------------------------------------------
 function SectionDivider({ label }: { label: string }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+
   return (
     <View style={styles.dividerRow}>
       <View style={styles.dividerLine} />
@@ -623,6 +626,9 @@ function buildLocalHTML(cv: any, profile: any): string {
 // MAIN SCREEN
 // -----------------------------------------------------------------------------
 export default function CVScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
+  const importModes = React.useMemo(() => createImportModes(COLORS), [COLORS]);
   const { user, profile } = useAuthStore();
   const { showToast } = useUIStore();
 
@@ -1281,7 +1287,7 @@ export default function CVScreen() {
                       What would you like to do?
                     </Text>
                     <View style={{ gap: 8 }}>
-                      {IMPORT_MODES.map((mode) => {
+                      {importModes.map((mode) => {
                         const Icon = mode.icon;
                         const selected = importMode === mode.key;
                         return (
@@ -1684,7 +1690,7 @@ export default function CVScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 130 },
   header: {
     flexDirection: "row",

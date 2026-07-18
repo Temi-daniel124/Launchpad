@@ -9,7 +9,7 @@ import {
   TextInputProps,
 } from "react-native";
 import { Text } from "./Text";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 
 interface InputFieldProps extends TextInputProps {
   label: string;
@@ -36,6 +36,8 @@ export const InputField: React.FC<InputFieldProps> = ({
   onBlur,
   ...rest
 }) => {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const labelAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
@@ -145,7 +147,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   container: { width: "100%" },
   inputWrapper: {
     flexDirection: "row",

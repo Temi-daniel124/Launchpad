@@ -16,7 +16,7 @@ import { OnboardingProgress } from "../../components/ui/OnboardingProgress";
 import { Toast } from "../../components/ui/Toast";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import { Briefcase } from "phosphor-react-native";
 
 // -----------------------------------------------------------------------------
@@ -122,6 +122,8 @@ function isBlockedCareer(title: string): boolean {
 // SCREEN
 // -----------------------------------------------------------------------------
 export default function Step1Screen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { updateProfile } = useAuthStore();
   const { showToast } = useUIStore();
   const [jobTitle, setJobTitle] = useState("");
@@ -354,7 +356,7 @@ export default function Step1Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 24, paddingBottom: 40 },
   iconRow: { marginBottom: 24, alignSelf: "flex-start" },
   iconGradient: {

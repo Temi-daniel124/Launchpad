@@ -18,7 +18,7 @@ import { Button } from "../../components/ui/Button";
 import { InputField } from "../../components/ui/InputField";
 import { Toast } from "../../components/ui/Toast";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS, RADIUS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   ArrowLeft,
   Eye,
@@ -32,6 +32,8 @@ const BIOMETRIC_EMAIL_KEY = "biometric_email";
 const BIOMETRIC_PASSWORD_KEY = "biometric_password";
 
 export default function SignUpScreen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -222,7 +224,7 @@ export default function SignUpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   header: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
   backBtn: {
     width: 40,

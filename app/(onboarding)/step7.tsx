@@ -19,7 +19,7 @@ import { GlassCard } from "../../components/ui/GlassCard";
 import { Toast } from "../../components/ui/Toast";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
-import { COLORS } from "../../constants/theme";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
 import {
   Bell,
   Shield,
@@ -31,6 +31,8 @@ import {
 } from "phosphor-react-native";
 
 export default function Step7Screen() {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { updateProfile, profile } = useAuthStore();
   const { showToast } = useUIStore();
   const [dataConsent, setDataConsent] = useState(false);
@@ -410,7 +412,7 @@ export default function Step7Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   iconRow: { marginBottom: 24, alignSelf: "flex-start" },
   iconGradient: {
     width: 72,

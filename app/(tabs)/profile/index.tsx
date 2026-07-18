@@ -19,7 +19,7 @@ import { Text } from "../../../components/ui/Text";
 import { GlassCard } from "../../../components/ui/GlassCard";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
-import { COLORS } from "../../../constants/theme";
+import { useTheme, type ThemeColors, type ThemePreference, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import {
   User,
   Crown,
@@ -39,6 +39,15 @@ import {
 import * as Notifications from "expo-notifications";
 
 export default function ProfileScreen() {
+  const {
+    colors: COLORS,
+    radius: RADIUS,
+    shadows: SHADOWS,
+    theme,
+    themePreference,
+    setThemePreference,
+  } = useTheme();
+  const styles = React.useMemo(() => createStyles(COLORS, RADIUS, SHADOWS), [COLORS, RADIUS, SHADOWS]);
   const { profile, signOut, user } = useAuthStore();
   const { showToast } = useUIStore();
   const [signingOut, setSigningOut] = useState(false);
@@ -82,6 +91,11 @@ export default function ProfileScreen() {
   };
 
   const subInfo = getSubscriptionInfo();
+  const themeOptions: { key: ThemePreference; label: string }[] = [
+    { key: "light", label: "Light" },
+    { key: "dark", label: "Dark" },
+    { key: "system", label: "System" },
+  ];
 
   const handleSignOut = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -383,6 +397,43 @@ export default function ProfileScreen() {
                 Settings
               </Text>
             </View>
+            <View style={styles.themeSetting}>
+              <Text variant="label" color={COLORS.snow}>
+                Theme
+              </Text>
+              <View style={styles.themeControl}>
+                {themeOptions.map((option) => {
+                  const selected = themePreference === option.key;
+                  return (
+                    <TouchableOpacity
+                      key={option.key}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      activeOpacity={0.8}
+                      onPress={() => setThemePreference(option.key)}
+                      style={[
+                        styles.themeOption,
+                        selected && styles.themeOptionActive,
+                      ]}
+                    >
+                      <Text
+                        variant="caption"
+                        weight="semibold"
+                        color={selected ? COLORS.white : COLORS.slate}
+                      >
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              <Text variant="caption" color={COLORS.fog} style={{ marginTop: 8 }}>
+                {themePreference === "system"
+                  ? `Using ${theme === "dark" ? "Dark" : "Light"}`
+                  : `${themePreference === "dark" ? "Dark" : "Light"} selected`}
+              </Text>
+            </View>
+            <View style={styles.divider} />
             {/* Section 6B , Security & Privacy */}
             <MenuItem
               icon={Shield}
@@ -448,7 +499,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeShadows) => StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 16 },
   profileHeader: { alignItems: "center", marginBottom: 24 },
   avatar: {
@@ -484,6 +535,30 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+  },
+  themeSetting: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  themeControl: {
+    flexDirection: "row",
+    gap: 4,
+    marginTop: 8,
+    padding: 4,
+    borderRadius: 8,
+    backgroundColor: COLORS.elevated,
+    borderWidth: 1,
+    borderColor: COLORS.rim,
+  },
+  themeOption: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  themeOptionActive: {
+    backgroundColor: COLORS.indigo,
   },
   divider: { height: 1, backgroundColor: COLORS.rim, marginHorizontal: 16 },
 });
