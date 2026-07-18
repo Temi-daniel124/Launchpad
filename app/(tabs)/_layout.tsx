@@ -36,6 +36,9 @@ const webBackdropStyle = Platform.select<ViewStyle>({
 });
 
 const blurIntensity = Platform.OS === "android" ? 16 : 24;
+const TAB_BAR_HEIGHT = 56;
+const TAB_ITEM_HEIGHT = 44;
+const TAB_LABEL_LINE_HEIGHT = 12;
 
 function withAlpha(hex: string, alpha: number) {
   const value = hex.replace("#", "");
@@ -63,12 +66,9 @@ function CustomTabBar({ state, navigation }: any) {
         { bottom: Math.max(insets.bottom, 10) },
       ]}
     >
-      <BlurView
-        intensity={blurIntensity}
-        tint={isDarkTheme ? "dark" : "light"}
+      <View
         style={[
           styles.tabBar,
-          webBackdropStyle,
           {
             backgroundColor: glassSurface,
             borderColor: borderSurface,
@@ -76,65 +76,73 @@ function CustomTabBar({ state, navigation }: any) {
           },
         ]}
       >
-        {TABS.map((tab, index) => {
-          const isFocused = state.index === index;
-          const Icon = tab.Icon;
-          const badgeCount = tab.badgeCount ?? 0;
+        <BlurView
+          intensity={blurIntensity}
+          pointerEvents="none"
+          tint={isDarkTheme ? "dark" : "light"}
+          style={[styles.blurSurface, webBackdropStyle]}
+        />
+        <View style={styles.tabBarContent}>
+          {TABS.map((tab, index) => {
+            const isFocused = state.index === index;
+            const Icon = tab.Icon;
+            const badgeCount = tab.badgeCount ?? 0;
 
-          return (
-            <Pressable
-              key={tab.name}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isFocused }}
-              onPress={() => {
-                const event = navigation.emit({
-                  type: "tabPress",
-                  target: state.routes[index].key,
-                  canPreventDefault: true,
-                });
-                if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(state.routes[index].name);
-                }
-              }}
-              style={({ pressed }) => [
-                styles.tabItem,
-                isFocused && [
-                  styles.tabItemActive,
-                  { backgroundColor: activeSurface },
-                ],
-                pressed && styles.tabItemPressed,
-              ]}
-            >
-              <Icon
-                size={20}
-                color={isFocused ? COLORS.indigo : COLORS.fog}
-                weight={isFocused ? "fill" : "regular"}
-              />
-              {badgeCount && badgeCount > 0 ? (
-                <View style={styles.badge}>
-                  <Text
-                    numberOfLines={1}
-                    style={styles.badgeText}
-                  >
-                    {badgeCount > 99 ? "99+" : badgeCount}
-                  </Text>
-                </View>
-              ) : null}
-              <Text
-                variant="caption"
-                numberOfLines={1}
-                color={isFocused ? COLORS.indigo : COLORS.fog}
-                style={[
-                  styles.tabLabel,
-                  isFocused && styles.tabLabelActive,
+            return (
+              <Pressable
+                key={tab.name}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isFocused }}
+                onPress={() => {
+                  const event = navigation.emit({
+                    type: "tabPress",
+                    target: state.routes[index].key,
+                    canPreventDefault: true,
+                  });
+                  if (!isFocused && !event.defaultPrevented) {
+                    navigation.navigate(state.routes[index].name);
+                  }
+                }}
+                style={({ pressed }) => [
+                  styles.tabItem,
+                  isFocused && [
+                    styles.tabItemActive,
+                    { backgroundColor: activeSurface },
+                  ],
+                  pressed && styles.tabItemPressed,
                 ]}
               >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </BlurView>
+                <Icon
+                  size={20}
+                  color={isFocused ? COLORS.indigo : COLORS.fog}
+                  weight={isFocused ? "fill" : "regular"}
+                />
+                {badgeCount && badgeCount > 0 ? (
+                  <View style={styles.badge}>
+                    <Text
+                      numberOfLines={1}
+                      style={styles.badgeText}
+                    >
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </Text>
+                  </View>
+                ) : null}
+                <Text
+                  variant="caption"
+                  numberOfLines={1}
+                  color={isFocused ? COLORS.indigo : COLORS.fog}
+                  style={[
+                    styles.tabLabel,
+                    isFocused && styles.tabLabelActive,
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
     </View>
   );
 }
@@ -171,24 +179,32 @@ const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeSh
     borderRadius: 999,
     borderWidth: 1,
     elevation: 8,
-    flexDirection: "row",
-    gap: 4,
+    height: TAB_BAR_HEIGHT,
     maxWidth: 520,
-    minHeight: 64,
     overflow: "hidden",
-    padding: 6,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
     width: "100%",
+  },
+  blurSurface: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  tabBarContent: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 4,
+    height: "100%",
+    justifyContent: "center",
+    padding: 6,
   },
   tabItem: {
     alignItems: "center",
     borderRadius: 999,
     flex: 1,
     gap: 3,
+    height: TAB_ITEM_HEIGHT,
     justifyContent: "center",
-    minHeight: 52,
     minWidth: 48,
     paddingHorizontal: 6,
     position: "relative",
@@ -202,7 +218,10 @@ const createStyles = (COLORS: ThemeColors, RADIUS: ThemeRadius, SHADOWS: ThemeSh
   tabLabel: {
     fontFamily: "Outfit-Regular",
     fontSize: 10,
+    includeFontPadding: false,
     letterSpacing: 0,
+    lineHeight: TAB_LABEL_LINE_HEIGHT,
+    textAlign: "center",
   },
   tabLabelActive: {
     fontFamily: "Outfit-SemiBold",
