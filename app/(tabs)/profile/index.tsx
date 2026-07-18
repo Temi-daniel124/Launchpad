@@ -20,6 +20,7 @@ import { GlassCard } from "../../../components/ui/GlassCard";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Toast } from "../../../components/ui/Toast";
 import { useTheme, type ThemeColors, type ThemePreference, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
+import { requestNotificationPermissions } from "../../../lib/notifications";
 import {
   User,
   Crown,
@@ -36,7 +37,6 @@ import {
   Info,
   Lock,
 } from "phosphor-react-native";
-import * as Notifications from "expo-notifications";
 
 export default function ProfileScreen() {
   const {
@@ -158,7 +158,12 @@ export default function ProfileScreen() {
 
   const handleNotifications = async () => {
     try {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await requestNotificationPermissions();
+      if (status === "unavailable-in-expo-go") {
+        showToast("Phone alerts are not available in this test app.", "error");
+        return;
+      }
+
       showToast(
         status === "granted"
           ? "Notifications enabled"

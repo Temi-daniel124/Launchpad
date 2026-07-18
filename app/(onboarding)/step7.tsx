@@ -11,12 +11,12 @@ import {
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Notifications from "expo-notifications";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { OnboardingProgress } from "../../components/ui/OnboardingProgress";
 import { GlassCard } from "../../components/ui/GlassCard";
 import { Toast } from "../../components/ui/Toast";
+import { requestNotificationPermissions } from "../../lib/notifications";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../contexts/ThemeContext";
@@ -52,7 +52,12 @@ export default function Step7Screen() {
   }, []);
 
   const requestNotifications = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await requestNotificationPermissions();
+    if (status === "unavailable-in-expo-go") {
+      showToast("Phone alerts are not available in this test app.", "error");
+      return;
+    }
+
     if (status === "granted") {
       setNotifEnabled(true);
       showToast("Notifications enabled", "success");
