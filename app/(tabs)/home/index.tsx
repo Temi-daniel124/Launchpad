@@ -1,365 +1,342 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
   RefreshControl,
-  Dimensions,
-  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ArrowRight,
+  Briefcase,
+  CalendarBlank,
+  Crown,
+  FileText,
+  Globe,
+  Robot,
+} from "phosphor-react-native";
+import { Skeleton } from "../../../components/ui/SkeletonLoader";
+import { Text } from "../../../components/ui/Text";
+import { Toast } from "../../../components/ui/Toast";
+import { useTheme, type ThemeColors, type ThemeRadius, type ThemeShadows } from "../../../contexts/ThemeContext";
 import { supabase } from "../../../lib/supabase";
 import { useAuthStore } from "../../../stores/authStore";
-import { Text } from "../../../components/ui/Text";
-import { GlassCard } from "../../../components/ui/GlassCard";
-import { StatusBadge } from "../../../components/ui/StatusBadge";
-import { Toast } from "../../../components/ui/Toast";
-import { COLORS, RADIUS, SHADOWS } from "../../../constants/theme";
-import {
-  Rocket,
-  Briefcase,
-  FileText,
-  Robot,
-  Globe,
-  ArrowRight,
-  Crown,
-  CalendarBlank,
-  Sparkle,
-  CheckCircle,
-  ArrowSquareOut,
-  TrendUp,
-  Lightning,
-} from "phosphor-react-native";
 
-const { width } = Dimensions.get("window");
-
-// -----------------------------------------------------------------------------
-// AI Career tips , shown daily, rotated by day of year
-// -----------------------------------------------------------------------------
 const CAREER_TIPS = [
   {
-    tip: "Tailor your CV summary to each job description. Mirror the exact language the employer uses , ATS systems score keyword density.",
-    category: "CV Strategy",
+    tip: "Tailor your CV summary to each job description. Mirror the exact language the employer uses so your application is easier to match.",
+    category: "CV strategy",
   },
   {
-    tip: "Add quantified results to every achievement. 'Increased conversion rate by 23%' beats 'Improved conversions' every time.",
-    category: "CV Impact",
+    tip: "Add measured results to each achievement. Specific numbers make your work easier for a hiring manager to understand.",
+    category: "CV impact",
   },
   {
-    tip: "Connect with the hiring manager on LinkedIn before applying. A warm introduction increases your callback rate by up to 4x.",
-    category: "Networking",
+    tip: "Follow up on applications after five business days with a concise note. Most candidates never do this.",
+    category: "Follow up",
   },
   {
-    tip: "The best time to send a job application is Tuesday to Thursday between 10am to 11am , hiring managers are most responsive then.",
-    category: "Timing",
-  },
-  {
-    tip: "Research the company's most recent press releases and reference them in your cover letter. It signals genuine interest.",
-    category: "Research",
-  },
-  {
-    tip: "For technical roles, a live GitHub portfolio with README files converts 60% better than a list of technologies on a CV.",
-    category: "Portfolio",
-  },
-  {
-    tip: "Salary negotiation: always let the employer give the first number. Research the market rate at Levels.fyi, Glassdoor, and LinkedIn Salary.",
-    category: "Negotiation",
-  },
-  {
-    tip: "Follow up on every application after 5 business days with a concise, professional email. Most candidates never follow up.",
-    category: "Follow-up",
-  },
-  {
-    tip: "Prepare 3 STAR stories (Situation, Task, Action, Result) for behavioural interviews. Practice them until they feel natural.",
+    tip: "Before an interview, prepare three short examples that explain the situation, your action, and the result.",
     category: "Interviews",
   },
   {
-    tip: "Your LinkedIn 'About' section should open with a hook , your biggest career achievement in the first two lines before 'see more'.",
-    category: "LinkedIn",
+    tip: "Keep your portfolio focused on your strongest work. A few clear projects usually beat a long, uneven list.",
+    category: "Portfolio",
   },
 ];
 
+const LOADING_STEPS = [
+  "Loading your profile",
+  "Checking saved jobs",
+  "Checking CV activity",
+];
+
+type ProfileCheck = {
+  label: string;
+  done: boolean;
+};
+
+type ProfileCompleteness = {
+  score: number;
+  missing: string[];
+};
+
+type ActionItem = {
+  label: string;
+  description: string;
+  route: string;
+  Icon: typeof Globe;
+};
+
+function withAlpha(hex: string, alpha: number) {
+  const value = hex.replace("#", "");
+  const bigint = Number.parseInt(value, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function getTodaysTip() {
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) /
-      86400000,
-  );
+  const startOfYear = new Date(new Date().getFullYear(), 0, 0).getTime();
+  const dayOfYear = Math.floor((Date.now() - startOfYear) / 86400000);
+
   return CAREER_TIPS[dayOfYear % CAREER_TIPS.length];
 }
 
-// -----------------------------------------------------------------------------
-// Profile completeness calculator
-// -----------------------------------------------------------------------------
-function calcProfileCompleteness(profile: any): {
-  score: number;
-  missing: string[];
-} {
-  const checks = [
-    {
-      key: "full_name",
-      label: "Full name",
-      done: !!profile?.full_name?.trim(),
-    },
-    {
-      key: "job_title",
-      label: "Job title",
-      done: !!profile?.job_title?.trim(),
-    },
-    {
-      key: "bio",
-      label: "Bio",
-      done: (profile?.bio?.trim()?.length || 0) > 20,
-    },
-    {
-      key: "skills",
-      label: "Skills (3+)",
-      done: (profile?.skills?.length || 0) >= 3,
-    },
-    {
-      key: "portfolio_url",
-      label: "Portfolio",
-      done: !!profile?.portfolio_url,
-    },
-    {
-      key: "github_username",
-      label: "GitHub",
-      done: !!profile?.github_username?.trim(),
-    },
-    {
-      key: "linkedin_url",
-      label: "LinkedIn",
-      done: !!profile?.linkedin_url?.trim(),
-    },
-    {
-      key: "experience",
-      label: "Work experience",
-      done: (profile?.work_experience?.length || 0) >= 1,
-    },
-    {
-      key: "education",
-      label: "Education",
-      done: (profile?.education?.length || 0) >= 1,
-    },
-    { key: "location", label: "Location", done: !!profile?.location?.trim() },
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getTrialDaysLeft(trialEndsAt?: string | null) {
+  if (!trialEndsAt) return 0;
+
+  return Math.max(
+    0,
+    Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000),
+  );
+}
+
+function formatCount(value: number) {
+  if (value > 999) return `${Math.round(value / 100) / 10}k`;
+  return String(value);
+}
+
+function calcProfileCompleteness(profile: any): ProfileCompleteness {
+  const checks: ProfileCheck[] = [
+    { label: "full name", done: !!profile?.full_name?.trim() },
+    { label: "job title", done: !!profile?.job_title?.trim() },
+    { label: "bio", done: (profile?.bio?.trim()?.length || 0) > 20 },
+    { label: "three skills", done: (profile?.skills?.length || 0) >= 3 },
+    { label: "portfolio", done: !!profile?.portfolio_url },
+    { label: "GitHub", done: !!profile?.github_username?.trim() },
+    { label: "LinkedIn", done: !!profile?.linkedin_url?.trim() },
+    { label: "career goal", done: (profile?.goals?.length || 0) > 0 },
+    { label: "industry", done: !!profile?.industry?.trim() },
+    { label: "experience level", done: !!profile?.experience_level?.trim() },
   ];
-  const done = checks.filter((c) => c.done).length;
-  const missing = checks.filter((c) => !c.done).map((c) => c.label);
-  return { score: Math.round((done / checks.length) * 100), missing };
+  const completed = checks.filter((check) => check.done).length;
+  const missing = checks.filter((check) => !check.done).map((check) => check.label);
+
+  return {
+    score: Math.round((completed / checks.length) * 100),
+    missing,
+  };
 }
 
-// -----------------------------------------------------------------------------
-// Animated progress bar
-// -----------------------------------------------------------------------------
-function ProfileCompletenessBar({ score }: { score: number }) {
-  const widthAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.spring(widthAnim, {
-      toValue: score,
-      useNativeDriver: false,
-      speed: 3,
-      bounciness: 0,
-    }).start();
-  }, [score]);
-
-  const barColor =
-    score >= 80 ? COLORS.emerald : score >= 50 ? COLORS.indigo : COLORS.gold;
+function HomeLoadingState({ activeStep }: { activeStep: number }) {
+  const { colors: COLORS, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = useMemo(
+    () => createStyles(COLORS, RADIUS, SHADOWS),
+    [COLORS, RADIUS, SHADOWS],
+  );
 
   return (
-    <View style={styles.progressBarBg}>
-      <Animated.View
-        style={[
-          styles.progressBarFill,
-          {
-            width: widthAnim.interpolate({
-              inputRange: [0, 100],
-              outputRange: ["0%", "100%"],
-              extrapolate: "clamp",
-            }),
-            backgroundColor: barColor,
-          },
-        ]}
-      />
-    </View>
+    <LinearGradient colors={[COLORS.navy, COLORS.abyss]} style={styles.screen}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <View style={styles.loadingHeader}>
+            <View>
+              <Skeleton width={96} height={16} />
+              <Skeleton width={144} height={28} style={styles.loadingTitle} />
+            </View>
+            <Skeleton width={48} height={48} borderRadius={24} />
+          </View>
+
+          <View style={styles.loadingCard}>
+            <Text variant="label" color={COLORS.snow}>
+              Preparing your home screen
+            </Text>
+            <Text variant="body" color={COLORS.slate} style={styles.loadingCopy}>
+              {LOADING_STEPS[activeStep] ?? LOADING_STEPS[LOADING_STEPS.length - 1]}
+            </Text>
+            <View style={styles.loadingSteps}>
+              {LOADING_STEPS.map((step, index) => (
+                <View key={step} style={styles.loadingStep}>
+                  <View
+                    style={[
+                      styles.loadingStepDot,
+                      index <= activeStep && styles.loadingStepDotActive,
+                    ]}
+                  />
+                  <Text
+                    variant="caption"
+                    color={index <= activeStep ? COLORS.snow : COLORS.fog}
+                    style={styles.loadingStepText}
+                  >
+                    {step}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.loadingCard}>
+            <Skeleton height={20} width="56%" />
+            <Skeleton height={12} width="88%" style={styles.loadingLine} />
+            <Skeleton height={12} width="72%" style={styles.loadingLine} />
+          </View>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
-// -----------------------------------------------------------------------------
-// Animated stat number
-// -----------------------------------------------------------------------------
-function AnimatedStat({ value, color }: { value: number; color: string }) {
-  const animVal = useRef(new Animated.Value(0)).current;
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    Animated.timing(animVal, {
-      toValue: value,
-      duration: 1200,
-      useNativeDriver: false,
-    }).start();
-    animVal.addListener(({ value: v }) => setDisplay(Math.round(v)));
-    return () => animVal.removeAllListeners();
-  }, [value]);
-
-  return (
-    <Text
-      style={{
-        fontSize: 28,
-        fontWeight: "800",
-        color,
-        fontFamily: "ClashDisplay",
-      }}
-    >
-      {display}
-    </Text>
-  );
-}
-
-// -----------------------------------------------------------------------------
-// MAIN SCREEN
-// -----------------------------------------------------------------------------
 export default function HomeScreen() {
-  const { profile, fetchProfile, user } = useAuthStore();
-  const [recentJobs, setRecentJobs] = useState<any[]>([]);
+  const { colors: COLORS, theme, radius: RADIUS, shadows: SHADOWS } = useTheme();
+  const styles = useMemo(
+    () => createStyles(COLORS, RADIUS, SHADOWS),
+    [COLORS, RADIUS, SHADOWS],
+  );
+  const { width: windowWidth } = useWindowDimensions();
+  const { profile, fetchProfile, user, isLoading: authLoading } = useAuthStore();
   const [jobCount, setJobCount] = useState(0);
   const [cvCount, setCvCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [homeLoading, setHomeLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [activeLoadStep, setActiveLoadStep] = useState(0);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(16)).current;
+  const firstName = profile?.full_name?.trim()?.split(" ")[0] || "there";
+  const initials = profile?.full_name?.trim()?.[0]?.toUpperCase() || "U";
+  const todaysTip = useMemo(() => getTodaysTip(), []);
+  const completeness = useMemo(() => calcProfileCompleteness(profile), [profile]);
+  const nextMissingField = completeness.missing[0];
+  const daysLeft = getTrialDaysLeft(profile?.trial_ends_at);
+  const isTrialActive = profile?.subscription_status === "trial" && daysLeft > 0;
+  const isTrialExpiringSoon = isTrialActive && daysLeft <= 3;
+  const isExpired = profile?.subscription_status === "expired" || (
+    profile?.subscription_status === "trial" &&
+    !!profile?.trial_ends_at &&
+    daysLeft === 0
+  );
+  const activityMax = Math.max(jobCount, cvCount, 1);
+  const isPhoneWidth = windowWidth < 768;
+  const actionCardWidth = (windowWidth - 48 - 12) / 2;
+  const isDarkTheme = theme === "dark";
+  const accentSoft = withAlpha(COLORS.indigo, isDarkTheme ? 0.18 : 0.1);
+  const accentBorder = withAlpha(COLORS.indigo, isDarkTheme ? 0.34 : 0.2);
 
-  const todaysTip = getTodaysTip();
-  const { score: completenessScore, missing: missingFields } =
-    calcProfileCompleteness(profile);
+  const actions: ActionItem[] = [
+    {
+      label: "Portfolio",
+      description: profile?.portfolio_url ? "Review your live page" : "Build your public page",
+      route: "/(tabs)/portfolio",
+      Icon: Globe,
+    },
+    {
+      label: "Jobs",
+      description: "Review saved matches",
+      route: "/(tabs)/jobs",
+      Icon: Briefcase,
+    },
+    {
+      label: "CV",
+      description: cvCount > 0 ? "Open your latest CV" : "Create a focused CV",
+      route: "/(tabs)/cv",
+      Icon: FileText,
+    },
+    {
+      label: "Alex chat",
+      description: "Get career help",
+      route: "/(tabs)/chat",
+      Icon: Robot,
+    },
+  ];
+
+  const loadData = useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}) => {
+      if (!silent) {
+        setHomeLoading(true);
+        setActiveLoadStep(0);
+      }
+      setLoadError(null);
+
+      if (!user) {
+        setJobCount(0);
+        setCvCount(0);
+        setHasLoaded(true);
+        if (!silent) setHomeLoading(false);
+        return;
+      }
+
+      try {
+        const [savedJobsResult, cvsResult] = await Promise.all([
+          supabase
+            .from("user_saved_jobs")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id),
+          supabase
+            .from("user_cvs")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id),
+        ]);
+
+        if (savedJobsResult.error || cvsResult.error) {
+          throw new Error("Home activity could not be loaded.");
+        }
+
+        setJobCount(savedJobsResult.count || 0);
+        setCvCount(cvsResult.count || 0);
+      } catch (error) {
+        console.warn("Home data load failed.", error);
+        setLoadError(
+          "We couldn't refresh your home screen. Your connection or the database request did not finish. Pull down to try again in a moment.",
+        );
+      } finally {
+        setHasLoaded(true);
+        if (!silent) setHomeLoading(false);
+      }
+    },
+    [user],
+  );
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        speed: 14,
-        bounciness: 3,
-      }),
-    ]).start();
-    loadData();
-  }, []);
+    if (authLoading) return;
+    void loadData();
+  }, [authLoading, loadData]);
 
-  const loadData = useCallback(async () => {
-    if (!user) return;
-    try {
-      const [jobsRes, savedRes, cvsRes] = await Promise.all([
-        supabase
-          .from("user_saved_jobs")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("status", "new")
-          .order("saved_at", { ascending: false })
-          .limit(3),
-        supabase
-          .from("user_saved_jobs")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id),
-        supabase
-          .from("user_cvs")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id),
-      ]);
-      setRecentJobs(jobsRes.data || []);
-      setJobCount(savedRes.count || 0);
-      setCvCount(cvsRes.count || 0);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  useEffect(() => {
+    if (!authLoading && !homeLoading) return;
+
+    const timer = setInterval(() => {
+      setActiveLoadStep((step) => Math.min(step + 1, LOADING_STEPS.length - 1));
+    }, 900);
+
+    return () => clearInterval(timer);
+  }, [authLoading, homeLoading]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    if (user) await fetchProfile(user.id);
-    await loadData();
-    setRefreshing(false);
-  }, [user]);
+    setLoadError(null);
 
-  const getGreeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
-  };
+    try {
+      if (user) await fetchProfile(user.id);
+      await loadData({ silent: true });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProfile, loadData, user]);
 
-  const getTrialDaysLeft = () => {
-    if (!profile?.trial_ends_at) return 0;
-    return Math.max(
-      0,
-      Math.ceil(
-        (new Date(profile.trial_ends_at).getTime() - Date.now()) / 86400000,
-      ),
-    );
-  };
-
-  const daysLeft = getTrialDaysLeft();
-  const isTrialActive =
-    profile?.subscription_status === "trial" && daysLeft > 0;
-  const isExpired = profile?.subscription_status === "expired";
-  const firstName = profile?.full_name?.split(" ")[0] || "there";
-
-  const QUICK_ACTIONS = [
-    {
-      icon: Globe,
-      label: "Portfolio",
-      color: COLORS.indigo,
-      bg: "rgba(21,154,99,0.12)",
-      route: "/(tabs)/portfolio",
-    },
-    {
-      icon: Briefcase,
-      label: "Find Jobs",
-      color: COLORS.cyan,
-      bg: "rgba(21,154,99,0.12)",
-      route: "/(tabs)/jobs",
-    },
-    {
-      icon: FileText,
-      label: "Build CV",
-      color: COLORS.gold,
-      bg: "rgba(245,158,11,0.12)",
-      route: "/(tabs)/cv",
-    },
-    {
-      icon: Robot,
-      label: "AI Chat",
-      color: COLORS.emerald,
-      bg: "rgba(16,185,129,0.12)",
-      route: "/(tabs)/chat",
-    },
-  ];
+  if (authLoading || homeLoading || !hasLoaded) {
+    return <HomeLoadingState activeStep={activeLoadStep} />;
+  }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.abyss }}>
-      <LinearGradient
-        colors={["rgba(21,154,99,0.12)", "transparent"]}
-        style={StyleSheet.absoluteFill}
-      />
+    <LinearGradient colors={[COLORS.navy, COLORS.abyss]} style={styles.screen}>
       <Toast />
-      <SafeAreaView style={{ flex: 1 }}>
-        <Animated.ScrollView
-          style={{
-            flex: 1,
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }}
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -371,783 +348,538 @@ export default function HomeScreen() {
             />
           }
         >
-          {/* -- Header ---------------------------------------------------- */}
           <View style={styles.header}>
-            <View>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: COLORS.fog,
-                  fontFamily: "Outfit-Regular",
-                }}
-              >
+            <View style={styles.headerText}>
+              <Text variant="caption" color={COLORS.slate}>
                 {getGreeting()},
               </Text>
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "700",
-                  color: COLORS.snow,
-                  marginTop: 2,
-                  fontFamily: "ClashDisplay",
-                }}
-              >
+              <Text variant="h2" color={COLORS.snow} numberOfLines={1}>
                 {firstName}
               </Text>
             </View>
+
             <TouchableOpacity
+              activeOpacity={0.82}
               onPress={() => router.push("/(tabs)/profile")}
-              style={styles.avatarBtn}
-              activeOpacity={0.85}
+              style={styles.avatarButton}
             >
               {profile?.profile_photo_url ? (
                 <Image
                   source={{ uri: profile.profile_photo_url }}
-                  style={styles.avatarImg}
+                  style={styles.avatarImage}
                 />
               ) : (
-                <LinearGradient
-                  colors={[COLORS.indigo, COLORS.cyan]}
-                  style={styles.avatarGrad}
-                >
-                  <Text
-                    style={{ color: "#fff", fontSize: 17, fontWeight: "700" }}
-                  >
-                    {profile?.full_name?.[0]?.toUpperCase() || "U"}
+                <View style={styles.avatarFallback}>
+                  <Text variant="label" color={COLORS.white}>
+                    {initials}
                   </Text>
-                </LinearGradient>
+                </View>
               )}
-              {/* Online indicator */}
-              <View style={styles.onlineDot} />
             </TouchableOpacity>
           </View>
 
-          {/* -- Trial / Expired banners ------------------------------------ */}
-          {isTrialActive && (
-            <GlassCard
-              variant="bordered"
-              style={{ marginBottom: 14 }}
-              padding={14}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <CalendarBlank size={18} color={COLORS.gold} weight="duotone" />
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "700",
-                      color: COLORS.snow,
-                    }}
-                  >
-                    {daysLeft} day{daysLeft !== 1 ? "s" : ""} left in free trial
-                  </Text>
-                  <Text
-                    style={{ fontSize: 12, color: COLORS.slate, marginTop: 2 }}
-                  >
-                    Upgrade to keep all features
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => router.push("/(tabs)/profile")}
-                  style={styles.upgradeChip}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: COLORS.gold,
-                      fontWeight: "700",
-                    }}
-                  >
-                    Upgrade
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </GlassCard>
-          )}
-
-          {isExpired && (
-            <TouchableOpacity
-              onPress={() => router.push("/(tabs)/profile")}
-              activeOpacity={0.9}
-            >
-              <View style={styles.expiredBanner}>
-                <Crown size={18} color={COLORS.rose} weight="duotone" />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "700",
-                      color: COLORS.snow,
-                    }}
-                  >
-                    Trial Expired
-                  </Text>
-                  <Text
-                    style={{ fontSize: 12, color: COLORS.slate, marginTop: 1 }}
-                  >
-                    Upgrade to continue using Launchpad
-                  </Text>
-                </View>
-                <ArrowRight size={16} color={COLORS.rose} />
-              </View>
-            </TouchableOpacity>
-          )}
-
-          {/* -- Profile Completeness Card (Bug #9) ------------------------- */}
-          <GlassCard style={{ marginBottom: 16 }} padding={18}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 12,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-              >
-                <View
-                  style={[
-                    styles.sectionIconBg,
-                    { backgroundColor: "rgba(21,154,99,0.12)" },
-                  ]}
-                >
-                  <TrendUp size={15} color={COLORS.indigo} weight="bold" />
-                </View>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "700",
-                    color: COLORS.snow,
-                  }}
-                >
-                  Profile Strength
-                </Text>
-              </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-              >
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "800",
-                    color:
-                      completenessScore >= 80
-                        ? COLORS.emerald
-                        : completenessScore >= 50
-                          ? COLORS.indigo
-                          : COLORS.gold,
-                    fontFamily: "ClashDisplay",
-                  }}
-                >
-                  {completenessScore}%
-                </Text>
-              </View>
-            </View>
-
-            <ProfileCompletenessBar score={completenessScore} />
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginTop: 8,
-              }}
-            >
-              <Text style={{ fontSize: 11, color: COLORS.fog }}>
-                {completenessScore < 40
-                  ? "Weak , add more details"
-                  : completenessScore < 70
-                    ? "Good , keep going"
-                    : "Strong profile"}
+          {refreshing ? (
+            <View style={styles.refreshNotice}>
+              <Text variant="caption" color={COLORS.slate}>
+                Refreshing your profile, saved jobs, and CV activity.
               </Text>
-              {missingFields.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => router.push("/(tabs)/profile/edit" as any)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      color: COLORS.indigo,
-                      fontWeight: "600",
-                    }}
-                  >
-                    +{missingFields.length} missing to
-                  </Text>
-                </TouchableOpacity>
-              )}
+            </View>
+          ) : null}
+
+          {loadError ? (
+            <View style={styles.errorCard}>
+              <Text variant="label" color={COLORS.snow}>
+                Home did not refresh
+              </Text>
+              <Text variant="body" color={COLORS.slate} style={styles.errorCopy}>
+                {loadError}
+              </Text>
+              <TouchableOpacity activeOpacity={0.82} onPress={onRefresh} style={styles.secondaryButton}>
+                <Text variant="label" color={COLORS.indigo}>
+                  Try again
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
+          {isTrialActive ? (
+            <TouchableOpacity
+              activeOpacity={0.86}
+              onPress={() => router.push("/(tabs)/profile")}
+              style={[
+                styles.inlineBanner,
+                { backgroundColor: accentSoft, borderColor: accentBorder },
+              ]}
+            >
+              <CalendarBlank size={20} color={COLORS.indigo} weight="regular" />
+              <View style={styles.bannerText}>
+                <Text variant="label" color={COLORS.snow}>
+                  {isTrialExpiringSoon
+                    ? `${daysLeft} day${daysLeft === 1 ? "" : "s"} left in your trial`
+                    : `Trial active, ${daysLeft} days left`}
+                </Text>
+                <Text variant="caption" color={COLORS.slate}>
+                  Manage your plan from Profile when you are ready.
+                </Text>
+              </View>
+              <ArrowRight size={18} color={COLORS.indigo} />
+            </TouchableOpacity>
+          ) : null}
+
+          {isExpired ? (
+            <TouchableOpacity
+              activeOpacity={0.86}
+              onPress={() => router.push("/(tabs)/profile")}
+              style={styles.expiredBanner}
+            >
+              <Crown size={20} color={COLORS.rose} weight="regular" />
+              <View style={styles.bannerText}>
+                <Text variant="label" color={COLORS.snow}>
+                  Trial expired
+                </Text>
+                <Text variant="caption" color={COLORS.slate}>
+                  Upgrade from Profile to continue using Launchpad.
+                </Text>
+              </View>
+              <ArrowRight size={18} color={COLORS.rose} />
+            </TouchableOpacity>
+          ) : null}
+
+          <View style={styles.profileCard}>
+            <View style={styles.cardHeader}>
+              <View>
+                <Text variant="caption" color={COLORS.slate}>
+                  Profile completeness
+                </Text>
+                <Text variant="h3" color={COLORS.snow}>
+                  {completeness.score === 100
+                    ? "Your profile is complete"
+                    : nextMissingField
+                      ? `Finish your ${nextMissingField}`
+                      : "Keep your profile current"}
+                </Text>
+              </View>
+              <View style={styles.scorePill}>
+                <Text variant="label" color={COLORS.indigo}>
+                  {completeness.score}%
+                </Text>
+              </View>
             </View>
 
-            {missingFields.length > 0 && completenessScore < 80 && (
+            <View style={styles.progressTrack}>
               <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 6,
-                  marginTop: 12,
-                }}
-              >
-                {missingFields.slice(0, 4).map((field) => (
-                  <TouchableOpacity
-                    key={field}
-                    onPress={() => router.push("/(tabs)/profile/edit" as any)}
-                    style={styles.missingFieldChip}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={{ fontSize: 11, color: COLORS.slate }}>
-                      + {field}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </GlassCard>
+                style={[
+                  styles.progressFill,
+                  { width: `${completeness.score}%` },
+                ]}
+              />
+            </View>
 
-          {/* -- Quick Actions ---------------------------------------------- */}
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            {QUICK_ACTIONS.map((action, i) => {
-              const Icon = action.icon;
-              return (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() => router.push(action.route as any)}
-                  activeOpacity={0.8}
-                  style={[
-                    styles.quickActionCard,
-                    {
-                      backgroundColor: action.bg,
-                      borderColor: `${action.color}25`,
-                    },
-                  ]}
-                >
-                  <View
+            <Text variant="body" color={COLORS.slate} style={styles.profileCopy}>
+              {completeness.score === 100
+                ? "You have enough detail for portfolio, CV, and job matching workflows."
+                : "A more complete profile gives Launchpad better material for your portfolio, CV, and job matches."}
+            </Text>
+
+            {completeness.score < 100 ? (
+              <TouchableOpacity
+                activeOpacity={0.86}
+                onPress={() => router.push("/(tabs)/profile/edit" as any)}
+                style={styles.primaryButton}
+              >
+                <Text variant="label" color={COLORS.white}>
+                  Finish profile
+                </Text>
+                <ArrowRight size={18} color={COLORS.white} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          <View style={styles.section}>
+            <Text variant="h3" color={COLORS.snow}>
+              What do you want to do next?
+            </Text>
+            <View style={styles.actionGrid}>
+              {actions.map((action) => {
+                const Icon = action.Icon;
+
+                return (
+                  <TouchableOpacity
+                    key={action.label}
+                    activeOpacity={0.86}
+                    onPress={() => router.push(action.route as any)}
                     style={[
-                      styles.quickActionIconWrap,
-                      { backgroundColor: `${action.color}18` },
+                      styles.actionCard,
+                      isPhoneWidth && styles.actionCardPhone,
+                      { width: actionCardWidth },
                     ]}
                   >
-                    <Icon size={22} color={action.color} weight="duotone" />
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: "700",
-                      color: COLORS.snow,
-                      marginTop: 10,
-                      textAlign: "center",
-                    }}
-                  >
-                    {action.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* -- AI Career Tip of the Day (Bug #9) ------------------------- */}
-          <LinearGradient
-            colors={["rgba(16,185,129,0.12)", "rgba(16,185,129,0.04)"]}
-            style={styles.tipCard}
-          >
-            <View style={styles.tipCardInner}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={[
-                    styles.sectionIconBg,
-                    { backgroundColor: "rgba(16,185,129,0.2)" },
-                  ]}
-                >
-                  <Sparkle size={14} color={COLORS.emerald} weight="fill" />
-                </View>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    fontWeight: "700",
-                    color: COLORS.emerald,
-                    letterSpacing: 1,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Career Insight
-                </Text>
-                <View style={styles.tipCategoryBadge}>
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      color: COLORS.emerald,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {todaysTip.category}
-                  </Text>
-                </View>
-              </View>
-              <Text
-                style={{ fontSize: 13, color: COLORS.slate, lineHeight: 20 }}
-              >
-                {todaysTip.tip}
-              </Text>
-            </View>
-          </LinearGradient>
-
-          {/* -- Portfolio Status ------------------------------------------ */}
-          <GlassCard style={{ marginBottom: 16 }} padding={18}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 12,
-              }}
-            >
-              <Text style={styles.cardTitle}>Portfolio</Text>
-              {profile?.portfolio_url ? (
-                <StatusBadge label="Live" variant="success" dot />
-              ) : (
-                <StatusBadge label="Not Generated" variant="default" />
-              )}
-            </View>
-
-            {profile?.portfolio_url ? (
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/portfolio")}
-                activeOpacity={0.8}
-              >
-                <View style={styles.urlChip}>
-                  <Globe size={12} color={COLORS.cyan} />
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: COLORS.cyan,
-                      marginLeft: 6,
-                      flex: 1,
-                      fontFamily: "JetBrainsMono-Regular",
-                    }}
-                    numberOfLines={1}
-                  >
-                    {profile.portfolio_url}
-                  </Text>
-                  <ArrowSquareOut size={12} color={COLORS.cyan} />
-                </View>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/portfolio")}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={[COLORS.indigo, COLORS.indigoLight]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.generateBtn}
-                >
-                  <Rocket size={16} color="#fff" weight="fill" />
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "700",
-                      color: "#fff",
-                      marginLeft: 8,
-                    }}
-                  >
-                    Generate My Portfolio
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
-          </GlassCard>
-
-          {/* -- Stats Row (Bug #9 , job search count + CV count) ----------- */}
-          <GlassCard style={{ marginBottom: 16 }} padding={18}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 16,
-              }}
-            >
-              <View
-                style={[
-                  styles.sectionIconBg,
-                  { backgroundColor: "rgba(21,154,99,0.15)" },
-                ]}
-              >
-                <Lightning size={14} color={COLORS.cyan} weight="bold" />
-              </View>
-              <Text style={styles.cardTitle}>Your Progress</Text>
-            </View>
-            <View style={styles.statsRow}>
-              {[
-                {
-                  label: "Jobs Found",
-                  value: jobCount,
-                  color: COLORS.indigo,
-                  onPress: () => router.push("/(tabs)/jobs"),
-                },
-                {
-                  label: "CVs Generated",
-                  value: cvCount,
-                  color: COLORS.gold,
-                  onPress: () => router.push("/(tabs)/cv"),
-                },
-                {
-                  label: "Profile Score",
-                  value: completenessScore,
-                  color: completenessScore >= 70 ? COLORS.emerald : COLORS.fog,
-                  onPress: () => router.push("/(tabs)/profile/edit" as any),
-                },
-              ].map((stat, i) => (
-                <TouchableOpacity
-                  key={i}
-                  onPress={stat.onPress}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.stat,
-                    i < 2 && {
-                      borderRightWidth: 1,
-                      borderRightColor: COLORS.rim,
-                    },
-                  ]}
-                >
-                  {loading ? (
-                    <ActivityIndicator size="small" color={stat.color} />
-                  ) : (
-                    <AnimatedStat value={stat.value} color={stat.color} />
-                  )}
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      color: COLORS.fog,
-                      marginTop: 4,
-                      textAlign: "center",
-                    }}
-                  >
-                    {stat.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </GlassCard>
-
-          {/* -- Latest Matches --------------------------------------------- */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest Matches</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(tabs)/jobs")}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: COLORS.indigo,
-                  fontWeight: "600",
-                }}
-              >
-                See all
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {loading ? (
-            <View style={styles.skeletonCard}>
-              <View
-                style={[styles.skeletonLine, { width: "60%", height: 14 }]}
-              />
-              <View
-                style={[
-                  styles.skeletonLine,
-                  { width: "40%", height: 11, marginTop: 8 },
-                ]}
-              />
-            </View>
-          ) : recentJobs.length > 0 ? (
-            <View style={{ gap: 10 }}>
-              {recentJobs.map((job) => (
-                <GlassCard
-                  key={job.id}
-                  padding={14}
-                  style={{ marginBottom: 0 }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <View style={{ flex: 1, marginRight: 10 }}>
-                      <Text
-                        style={{
-                          fontSize: 13,
-                          fontWeight: "700",
-                          color: COLORS.snow,
-                        }}
-                        numberOfLines={1}
-                      >
-                        {job.job_title}
+                    <View style={styles.actionIcon}>
+                      <Icon size={24} color={COLORS.indigo} weight="regular" />
+                    </View>
+                    <View style={styles.actionText}>
+                      <Text variant="label" color={COLORS.snow}>
+                        {action.label}
                       </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: COLORS.slate,
-                          marginTop: 3,
-                        }}
-                      >
-                        {job.company} {job.location ? `- ${job.location}` : ""}
+                      <Text variant="caption" color={COLORS.slate}>
+                        {action.description}
                       </Text>
                     </View>
-                    <StatusBadge
-                      label={job.source || "Job"}
-                      variant={job.source === "LinkedIn" ? "info" : "default"}
-                    />
-                  </View>
-                  {job.salary ? (
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: COLORS.gold,
-                        marginTop: 6,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {job.salary}
-                    </Text>
-                  ) : null}
-                </GlassCard>
-              ))}
+                    {isPhoneWidth ? null : (
+                      <ArrowRight size={18} color={COLORS.fog} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          ) : (
-            <GlassCard padding={24}>
-              <View style={{ alignItems: "center" }}>
-                <Briefcase size={32} color={COLORS.fog} weight="thin" />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "700",
-                    color: COLORS.slate,
-                    marginTop: 12,
-                    textAlign: "center",
-                  }}
-                >
-                  No job matches yet
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: COLORS.fog,
-                    marginTop: 4,
-                    textAlign: "center",
-                  }}
-                >
-                  Your daily digest will arrive soon
-                </Text>
-                <TouchableOpacity
-                  onPress={() => router.push("/(tabs)/jobs")}
-                  style={styles.findJobsBtn}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "700",
-                      color: COLORS.indigo,
-                    }}
-                  >
-                    Search Now
-                  </Text>
-                  <ArrowRight
-                    size={14}
-                    color={COLORS.indigo}
-                    style={{ marginLeft: 4 }}
-                  />
-                </TouchableOpacity>
-              </View>
-            </GlassCard>
-          )}
+          </View>
 
-          <View style={{ height: 120 }} />
-        </Animated.ScrollView>
+          <View style={styles.activityCard}>
+            <View style={styles.cardHeader}>
+              <View>
+                <Text variant="caption" color={COLORS.slate}>
+                  Activity snapshot
+                </Text>
+                <Text variant="h3" color={COLORS.snow}>
+                  Current totals
+                </Text>
+              </View>
+            </View>
+
+            <Text variant="body" color={COLORS.slate} style={styles.activityNote}>
+              Trend history is not tracked yet, so this shows your current saved jobs and CVs.
+            </Text>
+
+            {[
+              { label: "Saved jobs", value: jobCount, route: "/(tabs)/jobs" },
+              { label: "Generated CVs", value: cvCount, route: "/(tabs)/cv" },
+            ].map((item) => (
+              <TouchableOpacity
+                key={item.label}
+                activeOpacity={0.86}
+                onPress={() => router.push(item.route as any)}
+                style={styles.activityRow}
+              >
+                <View style={styles.activityMeta}>
+                  <Text variant="label" color={COLORS.snow}>
+                    {item.label}
+                  </Text>
+                  <Text variant="h2" color={COLORS.snow}>
+                    {formatCount(item.value)}
+                  </Text>
+                </View>
+                <View style={styles.activityBarTrack}>
+                  <View
+                    style={[
+                      styles.activityBarFill,
+                      { width: `${Math.round((item.value / activityMax) * 100)}%` },
+                    ]}
+                  />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={styles.tipCard}>
+            <View style={styles.cardHeader}>
+              <View>
+                <Text variant="caption" color={COLORS.slate}>
+                  Career insight
+                </Text>
+                <Text variant="h3" color={COLORS.snow}>
+                  {todaysTip.category}
+                </Text>
+              </View>
+            </View>
+            <Text variant="body" color={COLORS.slate} style={styles.tipCopy}>
+              {todaysTip.tip}
+            </Text>
+          </View>
+        </ScrollView>
       </SafeAreaView>
-    </View>
+    </LinearGradient>
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: 8 },
+const createStyles = (
+  COLORS: ThemeColors,
+  RADIUS: ThemeRadius,
+  SHADOWS: ThemeShadows,
+) => StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: 24 * 5,
+    paddingHorizontal: 24,
+    paddingTop: 8,
+  },
   header: {
+    alignItems: "center",
     flexDirection: "row",
+    gap: 16,
     justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  headerText: {
+    flex: 1,
+    gap: 4,
+  },
+  avatarButton: {
     alignItems: "center",
-    marginBottom: 20,
-  },
-  avatarBtn: { position: "relative" },
-  avatarGrad: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarImg: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: COLORS.indigo,
-  },
-  onlineDot: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: COLORS.emerald,
-    borderWidth: 2,
-    borderColor: COLORS.abyss,
-  },
-  upgradeChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    backgroundColor: "rgba(245,158,11,0.15)",
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
-    borderColor: "rgba(245,158,11,0.3)",
+    height: 48,
+    justifyContent: "center",
+    overflow: "hidden",
+    width: 48,
+  },
+  avatarFallback: {
+    alignItems: "center",
+    backgroundColor: COLORS.indigo,
+    height: 48,
+    justifyContent: "center",
+    width: 48,
+  },
+  avatarImage: {
+    height: 48,
+    width: 48,
+  },
+  refreshNotice: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    marginBottom: 16,
+    padding: 12,
+  },
+  inlineBanner: {
+    alignItems: "center",
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+    padding: 16,
   },
   expiredBanner: {
-    flexDirection: "row",
     alignItems: "center",
-    padding: 14,
-    borderRadius: 14,
+    backgroundColor: withAlpha(COLORS.rose, 0.08),
+    borderColor: withAlpha(COLORS.rose, 0.32),
+    borderRadius: RADIUS.xl,
     borderWidth: 1,
-    borderColor: "rgba(244,63,94,0.3)",
-    backgroundColor: "rgba(244,63,94,0.07)",
-    marginBottom: 14,
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+    padding: 16,
   },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: COLORS.rim,
-    borderRadius: 3,
-    overflow: "hidden",
+  bannerText: {
+    flex: 1,
+    gap: 4,
   },
-  progressBarFill: { height: 6, borderRadius: 3 },
-  missingFieldChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
+  errorCard: {
     backgroundColor: COLORS.navy,
-    borderWidth: 1,
     borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    marginBottom: 16,
+    padding: 16,
+    ...SHADOWS.card,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.snow,
-    marginBottom: 12,
-    fontFamily: "ClashDisplay",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
+  errorCopy: {
     marginTop: 8,
   },
-  sectionIconBg: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
-    justifyContent: "center",
-    alignItems: "center",
+  profileCard: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    marginBottom: 24,
+    padding: 24,
+    ...SHADOWS.card,
   },
-  cardTitle: { fontSize: 14, fontWeight: "700", color: COLORS.snow },
-  quickActionsGrid: {
+  cardHeader: {
+    alignItems: "flex-start",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 16,
+    gap: 16,
+    justifyContent: "space-between",
   },
-  quickActionCard: {
-    width: (width - 50) / 2,
-    paddingVertical: 18,
-    paddingHorizontal: 14,
-    borderRadius: 16,
+  scorePill: {
+    backgroundColor: withAlpha(COLORS.indigo, 0.1),
+    borderColor: withAlpha(COLORS.indigo, 0.2),
+    borderRadius: RADIUS.full,
     borderWidth: 1,
-    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  quickActionIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tipCard: {
-    borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "rgba(16,185,129,0.2)",
+  progressTrack: {
+    backgroundColor: COLORS.elevated,
+    borderRadius: RADIUS.full,
+    height: 8,
+    marginTop: 24,
     overflow: "hidden",
   },
-  tipCardInner: { padding: 16 },
-  tipCategoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 20,
-    backgroundColor: "rgba(16,185,129,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(16,185,129,0.25)",
+  progressFill: {
+    backgroundColor: COLORS.indigo,
+    borderRadius: RADIUS.full,
+    height: 8,
   },
-  urlChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(21,154,99,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(21,154,99,0.25)",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+  profileCopy: {
+    marginTop: 16,
   },
-  generateBtn: {
-    flexDirection: "row",
+  primaryButton: {
     alignItems: "center",
-    justifyContent: "center",
-    height: 46,
-    borderRadius: 12,
-  },
-  statsRow: { flexDirection: "row" },
-  stat: { flex: 1, alignItems: "center", paddingVertical: 4 },
-  findJobsBtn: {
+    alignSelf: "flex-start",
+    backgroundColor: COLORS.indigo,
+    borderRadius: RADIUS.xl,
     flexDirection: "row",
-    alignItems: "center",
-    marginTop: 14,
+    gap: 8,
+    marginTop: 24,
     paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(21,154,99,0.12)",
-    backgroundColor: "rgba(21,154,99,0.12)",
+    paddingVertical: 12,
   },
-  skeletonCard: {
+  secondaryButton: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    borderColor: withAlpha(COLORS.indigo, 0.24),
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  section: {
+    gap: 16,
+    marginBottom: 24,
+  },
+  actionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  actionCard: {
+    alignItems: "center",
     backgroundColor: COLORS.navy,
-    borderRadius: 14,
-    borderWidth: 1,
     borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 96,
     padding: 16,
-    marginBottom: 10,
+    ...SHADOWS.card,
   },
-  skeletonLine: { backgroundColor: COLORS.rim, borderRadius: 4 },
+  actionCardPhone: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+    minHeight: 132,
+  },
+  actionIcon: {
+    alignItems: "center",
+    backgroundColor: withAlpha(COLORS.indigo, 0.1),
+    borderRadius: RADIUS.xl,
+    height: 48,
+    justifyContent: "center",
+    width: 48,
+  },
+  actionText: {
+    flex: 1,
+    gap: 4,
+  },
+  activityCard: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    gap: 16,
+    marginBottom: 24,
+    padding: 24,
+    ...SHADOWS.card,
+  },
+  activityNote: {
+    marginTop: 4,
+  },
+  activityRow: {
+    gap: 12,
+  },
+  activityMeta: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  activityBarTrack: {
+    backgroundColor: COLORS.elevated,
+    borderRadius: RADIUS.full,
+    height: 8,
+    overflow: "hidden",
+  },
+  activityBarFill: {
+    backgroundColor: COLORS.indigo,
+    borderRadius: RADIUS.full,
+    height: 8,
+  },
+  tipCard: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    marginBottom: 24,
+    padding: 24,
+    ...SHADOWS.card,
+  },
+  tipCopy: {
+    marginTop: 16,
+  },
+  loadingHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  loadingTitle: {
+    marginTop: 8,
+  },
+  loadingCard: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    marginBottom: 16,
+    padding: 24,
+    ...SHADOWS.card,
+  },
+  loadingCopy: {
+    marginTop: 8,
+  },
+  loadingSteps: {
+    gap: 12,
+    marginTop: 24,
+  },
+  loadingStep: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
+  loadingStepDot: {
+    borderColor: COLORS.rim,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    height: 8,
+    width: 8,
+  },
+  loadingStepDotActive: {
+    backgroundColor: COLORS.indigo,
+    borderColor: COLORS.indigo,
+  },
+  loadingStepText: {
+    flex: 1,
+  },
+  loadingLine: {
+    marginTop: 12,
+  },
 });
